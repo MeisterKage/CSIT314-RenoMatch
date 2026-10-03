@@ -1,0 +1,30 @@
+# Render blueprint: the whole deployment, one file, one dashboard.
+#
+# One free web service runs Flask under gunicorn. The database is SQLite inside
+# the service, so there is nothing else to deploy.
+#
+# Render's free disk is wiped on every deploy, restart and spin-down (after 15
+# idle minutes). create_app() refills an empty database with the generated test
+# data on startup, so the site always comes back with 100+ records per type.
+# Anything created on the live site is temporary.
+
+services:
+  - type: web
+    name: csit314-renomatch
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    # One worker on purpose. Every worker runs create_app(), and each would try
+    # to seed the same empty SQLite file at the same time. Threads share the one
+    # process, so they add concurrency without a second seed. The timeout gives
+    # the seed room on the free plan's small CPU share.
+    startCommand: gunicorn --workers 1 --threads 4 --timeout 120 "app:create_app()"
+    healthCheckPath: /health
+    # Deploy main only after the GitHub Actions checks (lint + tests) pass.
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.10"
+      - key: SECRET_KEY
+        generateValue: true

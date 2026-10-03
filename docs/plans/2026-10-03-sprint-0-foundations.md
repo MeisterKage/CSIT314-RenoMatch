@@ -526,6 +526,8 @@ Screenshot the green Actions run and the branch protection settings page into `e
 
 ### Task 3: Continuous deployment to Render
 
+> **Superseded on 3 Oct 2026.** The project owner chose to match their FYP repository: the service is defined in `render.yaml` (Render Blueprint) with `autoDeployTrigger: checksPass`, so Render deploys `main` itself once the GitHub Actions checks pass. Steps 2–4 below (auto-deploy off, deploy hook secret, `deploy` job) are not used. Render setup is: New → Blueprint → select the repo → Apply.
+
 **Files:**
 - Modify: `.github/workflows/ci.yml` (add the `deploy` job)
 - Modify: `README.md` (add a Deployment section)
