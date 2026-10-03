@@ -18,6 +18,7 @@ def test_create_app_seeds_an_empty_database_when_enabled():
         assert db.session.query(UserAccount).count() > 400
         db.session.remove()
         db.drop_all()
+        db.engine.dispose()
 
 
 def test_seed_command_without_reset_on_seeded_db_exits_cleanly(app, make_account):

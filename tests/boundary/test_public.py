@@ -1,6 +1,7 @@
 import pytest
 
 from app import create_app
+from app.entity import db
 
 
 def test_health_returns_ok(client):
@@ -41,3 +42,5 @@ def test_production_sets_secure_cookie_flags(monkeypatch):
     app = create_app()
     assert app.config["SESSION_COOKIE_SECURE"] is True
     assert app.config["SESSION_COOKIE_SAMESITE"] == "Lax"
+    with app.app_context():
+        db.engine.dispose()

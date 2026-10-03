@@ -50,6 +50,7 @@ def seeded():
         yield
         db.session.remove()
         db.drop_all()
+        db.engine.dispose()
 
 
 @pytest.mark.parametrize("entity", MAIN_ENTITIES, ids=lambda e: e.__name__)
