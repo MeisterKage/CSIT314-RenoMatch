@@ -2,9 +2,9 @@ import pytest
 
 
 def test_site_stylesheet_is_served(client):
-    resp = client.get("/static/site.css")
-    assert resp.status_code == 200
-    assert b"--shutter-teal" in resp.data
+    with client.get("/static/site.css") as resp:
+        assert resp.status_code == 200
+        assert b"--shutter-teal" in resp.data
 
 
 def test_pages_use_site_stylesheet_not_bootstrap(client):
