@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+instance/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.env
+# Course material: copyright UOW, kept out of the repo
+docs/reference/
+Project Specification.pdf
