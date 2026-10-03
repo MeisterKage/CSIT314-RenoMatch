@@ -39,6 +39,9 @@ On startup the app fills an empty database with generated data: 100+ rows per ma
 plus about 8,000 views and 1,500 shortlists spread over the last 90 days.
 To rebuild it locally: `flask --app app seed --reset`.
 
+After pulling changes to entity classes, rebuild your local database with
+`flask --app app seed --reset` (there are no migrations).
+
 Every seeded account's password is `Password123!`.
 
 | Role | Username |
