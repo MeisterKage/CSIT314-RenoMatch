@@ -5,6 +5,13 @@ def test_change_password_requires_login(client, default_profiles):
     assert client.get("/account/password").headers["Location"] == "/login"
 
 
+def test_change_password_page_renders_for_logged_in_user(client, make_account, login):
+    login(make_account().username)
+    resp = client.get("/account/password")
+    assert resp.status_code == 200
+    assert b"Change password" in resp.data
+
+
 def test_change_password_then_log_in_with_new_password(client, make_account, login):
     account = make_account()
     login(account.username)

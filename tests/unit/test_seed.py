@@ -1,6 +1,7 @@
 import pytest
 
 from app import create_app
+from app.control.validation import email_problem, phone_problem, username_problem
 from app.entity import (
     IDP,
     AuditLog,
@@ -19,6 +20,8 @@ from app.entity import (
     ViewEvent,
     db,
 )
+from app.entity.idp import IDP_STATUSES, PROPERTY_TYPES, STYLES
+from app.entity.idp_flag import FLAG_STATUSES
 from app.seed import DEMO_USERNAMES, SEED_PASSWORD, seed_database
 from tests.helpers import TEST_CONFIG
 
@@ -68,6 +71,25 @@ def test_demo_accounts_log_in_with_seed_password(seeded):
         assert account.role == role
         assert account.check_password(SEED_PASSWORD)
         assert account.can_log_in()
+
+
+def test_seeded_accounts_pass_validation(seeded):
+    for account in db.session.query(UserAccount):
+        assert username_problem(account.username) is None
+        assert email_problem(account.email) is None
+        assert phone_problem(account.phone) is None
+
+
+def test_seeded_idps_use_allowed_enum_values(seeded):
+    for idp in db.session.query(IDP):
+        assert idp.style in STYLES
+        assert idp.property_type in PROPERTY_TYPES
+        assert idp.status in IDP_STATUSES
+
+
+def test_seeded_idp_flags_use_allowed_status(seeded):
+    for flag in db.session.query(IDPFlag):
+        assert flag.status in FLAG_STATUSES
 
 
 def test_every_review_follows_a_designer_reply(seeded):
