@@ -1,11 +1,38 @@
 {% extends "base.html" %}
+{% block hero %}
+<section class="hero">
+  <div class="wrap">
+    <h1>Find a designer by the homes they've already finished.</h1>
+    <p class="lead">Browse renovation work by Singapore interior designers, from HDB flats to condos and landed homes, and shortlist the studios whose style fits yours.</p>
+    <div class="actions">
+      {% if g.current_account %}
+        <a class="button" href="{{ url_for(ROLE_HOME[g.current_account.role]) }}">Go to your home</a>
+      {% else %}
+        <a class="button" href="{{ url_for('auth.register') }}">Create an account</a>
+        <a class="button button--quiet" href="{{ url_for('auth.login') }}">Log in</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+<div class="tile-band" role="presentation"></div>
+{% endblock %}
 {% block content %}
-<div class="py-5 text-center">
-  <h1 class="display-5">{{ config.SITE_NAME }}</h1>
-  <p class="lead">Find an interior designer whose past work matches your home and budget.</p>
-  {% if not g.current_account %}
-  <a class="btn btn-primary btn-lg me-2" href="{{ url_for('auth.register') }}">Create an account</a>
-  <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('auth.login') }}">Log in</a>
-  {% endif %}
+<div class="audiences">
+  <section>
+    <h2>For homeowners</h2>
+    <ul>
+      <li>See finished projects with their photos, style and budget.</li>
+      <li>Save the ones you like and compare them side by side.</li>
+      <li>Ask a designer about price and availability.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>For interior designers</h2>
+    <ul>
+      <li>Show your current and past projects in one portfolio.</li>
+      <li>See how often each project is viewed and shortlisted.</li>
+      <li>Answer homeowners' enquiries in one place.</li>
+    </ul>
+  </section>
 </div>
 {% endblock %}

@@ -1,0 +1,15 @@
+{# Text input with its label and error. Expects `form` and `errors` in context. #}
+{% macro field(name, label, type="text", autocomplete=None, hint=None) %}
+  <div class="field{% if errors.get(name) %} has-error{% endif %}">
+    <label for="{{ name }}">{{ label }}</label>
+    <input id="{{ name }}" name="{{ name }}" type="{{ type }}"
+           {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+           {% if errors.get(name) %}aria-invalid="true" aria-describedby="{{ name }}-error"{% elif hint %}aria-describedby="{{ name }}-hint"{% endif %}
+           value="{% if type != 'password' %}{{ form.get(name, '') }}{% endif %}">
+    {% if errors.get(name) %}
+      <p class="field-error" id="{{ name }}-error">{{ errors[name] }}</p>
+    {% elif hint %}
+      <p class="hint" id="{{ name }}-hint">{{ hint }}</p>
+    {% endif %}
+  </div>
+{% endmacro %}

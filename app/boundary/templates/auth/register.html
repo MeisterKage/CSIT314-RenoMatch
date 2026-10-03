@@ -1,39 +1,36 @@
 {% extends "base.html" %}
-{% block title %}Register · {{ config.SITE_NAME }}{% endblock %}
+{% from "_field.html" import field with context %}
+{% block title %}Create an account · {{ config.SITE_NAME }}{% endblock %}
 {% block content %}
-{% macro field(name, label, type="text") %}
-  <div class="mb-3">
-    <label class="form-label" for="{{ name }}">{{ label }}</label>
-    <input class="form-control{% if errors.get(name) %} is-invalid{% endif %}"
-           id="{{ name }}" name="{{ name }}" type="{{ type }}"
-           value="{% if type != 'password' %}{{ form.get(name, '') }}{% endif %}">
-    {% if errors.get(name) %}<div class="invalid-feedback">{{ errors[name] }}</div>{% endif %}
-  </div>
-{% endmacro %}
-<div class="row justify-content-center">
-  <div class="col-md-6">
-    <h1 class="h3 mb-3">Create an account</h1>
-    <form method="post" novalidate>
+<div class="auth">
+  <div class="auth__form">
+    <h1>Create an account</h1>
+    <form method="post" class="stack" novalidate>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <fieldset class="mb-3">
-        <legend class="form-label fs-6">I am a</legend>
-        {% for value, label in [("customer", "Homeowner looking for a designer"), ("designer", "Interior designer")] %}
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="role" id="role-{{ value }}"
-                 value="{{ value }}" {% if form.get('role', 'customer') == value %}checked{% endif %}>
-          <label class="form-check-label" for="role-{{ value }}">{{ label }}</label>
+      <fieldset>
+        <legend>I am a</legend>
+        <div class="choice-group">
+          {% for value, label in [("customer", "Homeowner looking for a designer"), ("designer", "Interior designer")] %}
+          <label class="choice">
+            <input type="radio" name="role" value="{{ value }}" {% if form.get('role', 'customer') == value %}checked{% endif %}>
+            <span>{{ label }}</span>
+          </label>
+          {% endfor %}
         </div>
-        {% endfor %}
-        {% if errors.get('role') %}<div class="text-danger small">{{ errors['role'] }}</div>{% endif %}
+        {% if errors.get('role') %}<p class="field-error">{{ errors['role'] }}</p>{% endif %}
       </fieldset>
-      {{ field("username", "Username") }}
-      {{ field("email", "Email", "email") }}
-      {{ field("full_name", "Full name") }}
-      {{ field("phone", "Phone (optional)", "tel") }}
-      {{ field("password", "Password", "password") }}
-      {{ field("confirm_password", "Confirm password", "password") }}
-      <button class="btn btn-primary w-100" type="submit">Create account</button>
+      {{ field("username", "Username", autocomplete="username", hint="3-30 letters, digits or underscores.") }}
+      {{ field("email", "Email", "email", autocomplete="email") }}
+      {{ field("full_name", "Full name", autocomplete="name") }}
+      {{ field("phone", "Phone (optional)", "tel", autocomplete="tel") }}
+      {{ field("password", "Password", "password", autocomplete="new-password", hint="At least 8 characters, with a letter and a digit.") }}
+      {{ field("confirm_password", "Confirm password", "password", autocomplete="new-password") }}
+      <button class="button button--full" type="submit">Create account</button>
     </form>
+    <p class="auth__switch">Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a></p>
   </div>
+  <aside class="auth__aside">
+    <p>Homeowners browse for free. Designers show work where homeowners are looking.</p>
+  </aside>
 </div>
 {% endblock %}
