@@ -50,3 +50,13 @@ Every seeded account's password is `Password123!`.
 | Platform Manager | `manager` |
 | Interior Designer | `designer` |
 | Customer | `customer` |
+
+## Deployment
+
+Hosted on Render's free plan, defined in `render.yaml` (a Render Blueprint).
+Render deploys `main` automatically, but only after the GitHub Actions checks
+(lint + tests) pass. No deploy hook or secret is involved.
+
+The free plan wipes the disk on every deploy, restart and spin-down (after 15 idle
+minutes), so the app re-creates its test data on startup. Anything created on the
+live site is temporary, and the first visit after idling takes about a minute.

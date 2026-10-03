@@ -35,7 +35,7 @@ Build a web platform that matches renovation customers with interior designers (
 | Lint | ruff | Fast, single tool |
 | Test data | Faker-based `scripts/seed.py` | Repeatable random data at the required scale |
 | CI | GitHub Actions | Runs on every push and PR |
-| CD | Render free web service, deployed via deploy hook from GitHub Actions | Only green builds on `main` go live |
+| CD | Render free web service defined in `render.yaml` (Blueprint), auto-deploy trigger `checksPass` | Render deploys `main` only after the GitHub Actions checks pass |
 | Email | SMTP (e.g. Gmail app password) in production; console backend in dev and tests | US43, US52 |
 | Agile tool | Taiga (public project) | Recommended by the subject |
 
@@ -155,8 +155,9 @@ tests/
   unit/         entity and controller tests
   boundary/     Flask test-client tests per page
 .github/workflows/
-  ci.yml        lint + tests on push and PR; deploy hook on main
+  ci.yml        lint + tests on push and PR (Render waits for these checks)
   weekly.yml    scheduled call for US52
+render.yaml     Render Blueprint: service definition, deploy after checks pass
 evidence/
   week-N/       weekly screenshots for the report
 ```
@@ -236,13 +237,13 @@ Rule 3 follows the B-C-E style usually taught in CSIT314. It will be checked aga
 ### Pipeline
 
 - `ci.yml`, on every push and PR: install, `ruff check`, `pytest --cov`.
-- On push to `main` with tests passing: call the Render deploy hook (GitHub secret). Render auto-deploy is off.
+- On push to `main`: Render deploys automatically once the GitHub checks pass (`autoDeployTrigger: checksPass` in `render.yaml`). No deploy hook or secret is needed.
 - `weekly.yml`, scheduled weekly: calls a token-protected endpoint that sends US52 summaries.
 - Branch protection on `main`: PR required, CI must pass, no direct pushes.
 
 ### CD evidence
 
-One feature is traced with screenshots: Taiga card → branch → failing CI run → passing CI run → merged PR → deploy run → feature live on the Render URL.
+One feature is traced with screenshots: Taiga card → branch → failing CI run → passing CI run → merged PR → Render deploy (shown under Deployments on GitHub) → feature live on the Render URL.
 
 ## 7. Sprint plan
 
