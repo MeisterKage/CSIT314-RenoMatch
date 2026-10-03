@@ -113,6 +113,9 @@ def register_seed_command(app) -> None:
         if reset:
             db.drop_all()
             db.create_all()
+        elif db.session.query(UserAccount).first() is not None:
+            click.echo("Database already seeded; use --reset to rebuild.")
+            return
         for table, count in seed_database().items():
             click.echo(f"{table}: {count}")
 
