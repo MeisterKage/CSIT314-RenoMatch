@@ -2,9 +2,10 @@
 {% from "_field.html" import field with context %}
 {% block title %}Create an account · {{ config.SITE_NAME }}{% endblock %}
 {% block content %}
-<div class="auth">
+<div class="wrap auth">
   <div class="auth__form">
     <h1>Create an account</h1>
+    <p>Homeowners browse for free. Designers show their work where homeowners are looking.</p>
     <form method="post" class="stack" novalidate>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <fieldset>
@@ -29,8 +30,8 @@
     </form>
     <p class="auth__switch">Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a></p>
   </div>
-  <aside class="auth__aside">
-    <p>Homeowners browse for free. Designers show work where homeowners are looking.</p>
-  </aside>
+  <div class="auth__photo">
+    <img src="{{ url_for('static', filename='img/auth-kitchen.jpg') }}" alt="" width="1200" height="800">
+  </div>
 </div>
 {% endblock %}
