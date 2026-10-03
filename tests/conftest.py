@@ -83,3 +83,11 @@ def make_idp(make_account, make_category):
         return idp
 
     return _make
+
+
+@pytest.fixture
+def login(client):
+    def _login(username, password=TEST_PASSWORD):
+        return client.post("/login", data={"username": username, "password": password})
+
+    return _login
