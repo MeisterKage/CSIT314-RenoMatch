@@ -28,7 +28,7 @@ class UserAccount(db.Model):
     @classmethod
     def create(cls, username, email, password, full_name, profile, phone="") -> "UserAccount":
         account = cls(
-            username=username,
+            username=username.lower(),
             email=email.lower(),
             full_name=full_name,
             phone=phone,
@@ -45,7 +45,7 @@ class UserAccount(db.Model):
 
     @classmethod
     def find_by_username(cls, username: str) -> "UserAccount | None":
-        return cls.query.filter_by(username=username).first()
+        return cls.query.filter_by(username=username.lower()).first()
 
     @classmethod
     def find_by_email(cls, email: str) -> "UserAccount | None":
