@@ -3,5 +3,9 @@
 <div class="py-5 text-center">
   <h1 class="display-5">{{ config.SITE_NAME }}</h1>
   <p class="lead">Find an interior designer whose past work matches your home and budget.</p>
+  {% if not g.current_account %}
+  <a class="btn btn-primary btn-lg me-2" href="{{ url_for('auth.register') }}">Create an account</a>
+  <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('auth.login') }}">Log in</a>
+  {% endif %}
 </div>
 {% endblock %}
