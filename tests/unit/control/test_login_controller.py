@@ -11,6 +11,11 @@ def test_login_returns_account_for_correct_credentials(make_account):
     assert LoginController().login("alice", TEST_PASSWORD).id == account.id
 
 
+def test_login_accepts_username_regardless_of_case(make_account):
+    account = make_account(username="alice")
+    assert LoginController().login("ALICE", TEST_PASSWORD).id == account.id
+
+
 def test_login_rejects_wrong_password(make_account):
     make_account(username="alice")
     with pytest.raises(LoginError, match="Invalid username or password"):

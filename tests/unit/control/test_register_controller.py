@@ -41,6 +41,13 @@ def test_register_rejects_taken_username(make_account):
     assert exc.value.errors["username"] == "That username is taken."
 
 
+def test_register_rejects_taken_username_case_insensitively(make_account):
+    make_account(username="newuser")
+    with pytest.raises(ValidationError) as exc:
+        register(username="NewUser")
+    assert exc.value.errors["username"] == "That username is taken."
+
+
 def test_register_rejects_taken_email_case_insensitively(make_account):
     make_account(email="NEW@example.com")
     with pytest.raises(ValidationError) as exc:
