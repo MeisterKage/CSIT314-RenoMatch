@@ -1,22 +1,26 @@
 {% extends "base.html" %}
 {% block title %}Log in · {{ config.SITE_NAME }}{% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-5">
-    <h1 class="h3 mb-3">Log in</h1>
-    {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
-    <form method="post">
+<div class="auth">
+  <div class="auth__form">
+    <h1>Log in</h1>
+    {% if error %}<div class="flash flash--danger" role="alert">{{ error }}</div>{% endif %}
+    <form method="post" class="stack">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div class="mb-3">
-        <label class="form-label" for="username">Username</label>
-        <input class="form-control" id="username" name="username" value="{{ username or '' }}" required autofocus>
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" name="username" value="{{ username or '' }}" autocomplete="username" required autofocus>
       </div>
-      <div class="mb-3">
-        <label class="form-label" for="password">Password</label>
-        <input class="form-control" id="password" name="password" type="password" required>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
       </div>
-      <button class="btn btn-primary w-100" type="submit">Log in</button>
+      <button class="button button--full" type="submit">Log in</button>
     </form>
+    <p class="auth__switch">New to {{ config.SITE_NAME }}? <a href="{{ url_for('auth.register') }}">Create an account</a></p>
   </div>
+  <aside class="auth__aside">
+    <p>Every project here is a home someone already lives in.</p>
+  </aside>
 </div>
 {% endblock %}

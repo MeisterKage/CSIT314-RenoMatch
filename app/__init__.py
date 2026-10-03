@@ -11,7 +11,12 @@ csrf = CSRFProtect()
 
 
 def create_app(test_config: dict | None = None) -> Flask:
-    app = Flask(__name__, instance_relative_config=True, template_folder="boundary/templates")
+    app = Flask(
+        __name__,
+        instance_relative_config=True,
+        template_folder="boundary/templates",
+        static_folder="boundary/static",
+    )
     app.config.from_mapping(
         SITE_NAME="RenoMatch",
         SECRET_KEY=os.environ.get("SECRET_KEY", DEV_SECRET_KEY),

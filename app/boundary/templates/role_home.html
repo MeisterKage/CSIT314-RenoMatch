@@ -1,7 +1,18 @@
 {% extends "base.html" %}
-{% block title %}{{ role_label }} · {{ config.SITE_NAME }}{% endblock %}
+{% block title %}{{ role_label }} home · {{ config.SITE_NAME }}{% endblock %}
 {% block content %}
-<h1 class="h3">{{ role_label }} home</h1>
-<p>Welcome, {{ g.current_account.full_name }}.</p>
-<p class="text-body-secondary">Features for this role are added sprint by sprint.</p>
+<header class="role-head">
+  <h1>{{ role_label }} home</h1>
+  <p>Welcome, {{ g.current_account.full_name }}. Here is what you can do now, and what each sprint adds.</p>
+</header>
+<h2>Your tools</h2>
+<ul class="tools">
+  {% for tool in tools %}
+  <li class="tool{% if tool.available %} tool--available{% endif %}">
+    <h3>{% if tool.available %}<a href="{{ url_for(tool.endpoint) }}">{{ tool.name }}</a>{% else %}{{ tool.name }}{% endif %}</h3>
+    <p>{{ tool.description }}</p>
+    <span class="tool__status">{{ tool.status }}</span>
+  </li>
+  {% endfor %}
+</ul>
 {% endblock %}

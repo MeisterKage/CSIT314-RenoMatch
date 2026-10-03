@@ -1,0 +1,516 @@
+/* RenoMatch: the Peranakan shophouse.
+   Lime-plaster walls, teal shutters, one patterned tile floor.
+   The tile (tile.svg) is the only decoration; everything else stays quiet. */
+
+:root {
+  --lime-plaster: #f1f3ef;
+  --plaster-deep: #e3e7e2;
+  --graphite: #23292b;
+  --shutter-teal: #1f5f5b;
+  --shutter-dark: #174845;
+  --terrazzo: #5e6866;
+  --tile-rose: #c9707d;
+  --rule: #c7cec9;
+  --paper: #fafbf9;
+
+  --font: "Archivo", system-ui, sans-serif;
+  --measure: 60ch;
+  --radius: 4px;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2.5rem;
+  --space-6: 4rem;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font);
+  font-size: 100%;
+  line-height: 1.6;
+  color: var(--graphite);
+  background: var(--lime-plaster);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Headings: wide and heavy, like an architect's drawing label. */
+h1,
+h2,
+h3 {
+  font-stretch: 125%;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--space-3);
+}
+
+h1 {
+  font-size: clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+h3 {
+  font-size: 1.125rem;
+}
+
+p {
+  margin: 0 0 var(--space-3);
+  max-width: var(--measure);
+}
+
+a {
+  color: var(--shutter-teal);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--shutter-dark);
+}
+
+:focus-visible {
+  outline: 3px solid var(--shutter-teal);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--space-3);
+  top: -3rem;
+  padding: var(--space-2) var(--space-3);
+  background: var(--graphite);
+  color: var(--paper);
+  z-index: 10;
+}
+
+.skip-link:focus {
+  top: var(--space-3);
+}
+
+.wrap {
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+/* Header ---------------------------------------------------------------- */
+
+.site-header {
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+}
+
+.site-header .wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 4rem;
+  flex-wrap: wrap;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-stretch: 125%;
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: var(--graphite);
+  text-decoration: none;
+}
+
+.brand::before {
+  content: "";
+  width: 1.5rem;
+  height: 1.5rem;
+  background: url("tile.svg") center / 3rem;
+  border-radius: 2px;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.site-nav a,
+.link-button {
+  color: var(--graphite);
+  text-decoration: none;
+  font: inherit;
+  font-weight: 600;
+}
+
+.site-nav a:hover,
+.link-button:hover {
+  color: var(--shutter-teal);
+  text-decoration: underline;
+}
+
+.site-nav form {
+  margin: 0;
+}
+
+.link-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.who {
+  color: var(--terrazzo);
+}
+
+/* Main and flashes ------------------------------------------------------ */
+
+main {
+  flex: 1;
+  padding: var(--space-5) 0 var(--space-6);
+}
+
+.flash {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  max-width: var(--measure);
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3);
+  background: var(--paper);
+  border-left: 4px solid var(--shutter-teal);
+}
+
+.flash::before {
+  content: "✓";
+  font-weight: 800;
+  color: var(--shutter-teal);
+}
+
+.flash--danger {
+  border-left-color: var(--tile-rose);
+}
+
+.flash--danger::before {
+  content: "!";
+  color: #9b3b4a;
+}
+
+.site-footer {
+  border-top: 1px solid var(--rule);
+  padding: var(--space-4) 0;
+  color: var(--terrazzo);
+  font-size: 0.875rem;
+}
+
+.site-footer p {
+  margin: 0;
+}
+
+/* Buttons --------------------------------------------------------------- */
+
+.button {
+  display: inline-block;
+  padding: 0.75rem 1.25rem;
+  border: 2px solid var(--shutter-teal);
+  border-radius: var(--radius);
+  background: var(--shutter-teal);
+  color: var(--paper);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: var(--shutter-dark);
+  border-color: var(--shutter-dark);
+  color: var(--paper);
+}
+
+.button--quiet {
+  background: transparent;
+  color: var(--shutter-teal);
+}
+
+.button--quiet:hover {
+  background: var(--plaster-deep);
+  color: var(--shutter-dark);
+}
+
+.button--full {
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* Landing --------------------------------------------------------------- */
+
+.hero {
+  padding: var(--space-5) 0 var(--space-6);
+}
+
+.hero h1 {
+  max-width: 18ch;
+}
+
+.hero .lead {
+  font-size: 1.125rem;
+  color: var(--terrazzo);
+  margin-bottom: var(--space-4);
+}
+
+/* The one bold element: a strip of shophouse floor tile. */
+.tile-band {
+  height: 9rem;
+  background: url("tile.svg") left center / 96px repeat;
+  border-top: 6px solid var(--graphite);
+  border-bottom: 6px solid var(--graphite);
+}
+
+.audiences {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-5);
+  padding-top: var(--space-5);
+}
+
+.audiences ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.audiences li + li {
+  margin-top: var(--space-2);
+}
+
+/* Login and register ---------------------------------------------------- */
+
+.auth {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.auth__form {
+  max-width: 28rem;
+}
+
+.auth__aside {
+  position: sticky;
+  top: var(--space-4);
+  height: min(32rem, calc(100vh - 2 * var(--space-4)));
+  border: 6px solid var(--graphite);
+  background: url("tile.svg") center / 96px repeat;
+  display: flex;
+  align-items: flex-end;
+  padding: var(--space-4);
+}
+
+.auth__aside p {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--paper);
+  font-stretch: 125%;
+  font-weight: 700;
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+.auth__switch {
+  margin-top: var(--space-4);
+  color: var(--terrazzo);
+}
+
+/* Forms ----------------------------------------------------------------- */
+
+form.stack > * + * {
+  margin-top: var(--space-4);
+}
+
+.field label,
+fieldset legend {
+  display: block;
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.field input {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--terrazzo);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--graphite);
+  font: inherit;
+}
+
+.field input:focus-visible {
+  border-color: var(--shutter-teal);
+}
+
+.field.has-error input {
+  border: 2px solid #9b3b4a;
+}
+
+.field-error {
+  display: flex;
+  gap: var(--space-1);
+  margin: var(--space-1) 0 0;
+  color: #9b3b4a;
+  font-size: 0.9375rem;
+}
+
+.field-error::before {
+  content: "!";
+  font-weight: 800;
+}
+
+.hint {
+  margin: var(--space-1) 0 0;
+  color: var(--terrazzo);
+  font-size: 0.875rem;
+}
+
+fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.choice-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.choice {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  padding: var(--space-3);
+  border: 1px solid var(--terrazzo);
+  border-radius: var(--radius);
+  background: var(--paper);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.choice:has(input:checked) {
+  border: 2px solid var(--shutter-teal);
+  background: var(--plaster-deep);
+}
+
+.choice input {
+  accent-color: var(--shutter-teal);
+  margin-top: 0.35em;
+}
+
+/* Role home ------------------------------------------------------------- */
+
+.role-head {
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--rule);
+}
+
+.role-head .role {
+  color: var(--terrazzo);
+  font-weight: 600;
+  margin: 0 0 var(--space-2);
+}
+
+.tools {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 48rem;
+}
+
+.tool {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-1) var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.tool h3 {
+  margin: 0;
+  font-stretch: 100%;
+  font-weight: 700;
+}
+
+.tool p {
+  margin: 0;
+  color: var(--terrazzo);
+  grid-column: 1;
+}
+
+.tool__status {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--terrazzo);
+  white-space: nowrap;
+}
+
+.tool--available .tool__status {
+  color: var(--shutter-teal);
+}
+
+/* Small screens --------------------------------------------------------- */
+
+@media (max-width: 48rem) {
+  .wrap {
+    padding: 0 var(--space-3);
+  }
+
+  .auth {
+    grid-template-columns: 1fr;
+  }
+
+  .auth__aside {
+    display: none;
+  }
+
+  .choice-group {
+    grid-template-columns: 1fr;
+  }
+
+  .tile-band {
+    height: 6rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}
