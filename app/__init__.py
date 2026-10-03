@@ -22,8 +22,11 @@ def create_app(test_config: dict | None = None) -> Flask:
     )
     if test_config:
         app.config.update(test_config)
-    if os.environ.get("RENDER") and app.config["SECRET_KEY"] == DEV_SECRET_KEY:
-        raise RuntimeError("SECRET_KEY must be set in production.")
+    if os.environ.get("RENDER"):
+        if not app.config["SECRET_KEY"] or app.config["SECRET_KEY"] == DEV_SECRET_KEY:
+            raise RuntimeError("SECRET_KEY must be set in production.")
+        app.config["SESSION_COOKIE_SECURE"] = True
+        app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
     os.makedirs(app.instance_path, exist_ok=True)
     db.init_app(app)

@@ -11,6 +11,12 @@ FORM = {
 }
 
 
+def test_register_page_renders_for_anonymous_visitor(client, default_profiles):
+    resp = client.get("/register")
+    assert resp.status_code == 200
+    assert b"Create an account" in resp.data
+
+
 def test_register_creates_account_and_sends_user_to_login(client, default_profiles):
     resp = client.post("/register", data=FORM)
     assert resp.headers["Location"] == "/login"

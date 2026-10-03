@@ -20,6 +20,19 @@ def test_login_redirects_each_role_to_its_home(client, make_account, role, home)
     assert resp.headers["Location"] == home
 
 
+def test_login_page_renders_for_anonymous_visitor(client, default_profiles):
+    resp = client.get("/login")
+    assert resp.status_code == 200
+    assert b"Log in" in resp.data
+
+
+def test_customer_home_renders_for_logged_in_customer(client, make_account, login):
+    login(make_account(role="customer").username)
+    resp = client.get("/customer/")
+    assert resp.status_code == 200
+    assert b"Customer home" in resp.data
+
+
 def test_login_page_shows_error_for_bad_password(client, make_account):
     account = make_account()
     resp = client.post("/login", data={"username": account.username, "password": "nope"})

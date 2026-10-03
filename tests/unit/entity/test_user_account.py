@@ -20,6 +20,12 @@ def test_email_is_stored_lowercase_and_found_case_insensitively(make_account):
     assert UserAccount.find_by_email("MIXED@example.com").id == account.id
 
 
+def test_username_is_stored_lowercase_and_found_case_insensitively(make_account):
+    account = make_account(username="MixedCase")
+    assert account.username == "mixedcase"
+    assert UserAccount.find_by_username("MIXEDCASE").id == account.id
+
+
 def test_role_comes_from_profile(make_account):
     assert make_account(role="designer").role == "designer"
 
