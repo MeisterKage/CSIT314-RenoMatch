@@ -1,9 +1,10 @@
-from flask import Blueprint, g, redirect, render_template, request, session, url_for
+from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 from flask.views import MethodView
 
 from app.boundary.auth_guard import ROLE_HOME, load_current_account
 from app.control.errors import LoginError
 from app.control.login_controller import LoginController
+from app.control.logout_controller import LogoutController
 
 bp = Blueprint("auth", __name__)
 bp.before_app_request(load_current_account)
@@ -34,4 +35,14 @@ class LoginPage(MethodView):
         return redirect(url_for(ROLE_HOME[account.role]))
 
 
+class LogoutAction(MethodView):
+    """Boundary for US02: log out."""
+
+    def post(self):
+        LogoutController().logout(session)
+        flash("You have been logged out.", "info")
+        return redirect(url_for("public.home"))
+
+
 bp.add_url_rule("/login", view_func=LoginPage.as_view("login"))
+bp.add_url_rule("/logout", view_func=LogoutAction.as_view("logout"))
