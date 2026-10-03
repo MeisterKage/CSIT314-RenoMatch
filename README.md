@@ -32,3 +32,18 @@ ruff check .
 2. Commit the failing tests first (`test(US07): ...`) and push. CI goes red.
 3. Commit the implementation (`feat(US07): ...`) and push. CI goes green.
 4. Open a PR and merge it with a **merge commit** once CI passes.
+
+## Test data and demo accounts
+
+On startup the app fills an empty database with generated data: 100+ rows per main entity,
+plus about 8,000 views and 1,500 shortlists spread over the last 90 days.
+To rebuild it locally: `flask --app app seed --reset`.
+
+Every seeded account's password is `Password123!`.
+
+| Role | Username |
+|---|---|
+| User Admin | `admin` |
+| Platform Manager | `manager` |
+| Interior Designer | `designer` |
+| Customer | `customer` |

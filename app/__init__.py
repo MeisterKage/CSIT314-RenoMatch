@@ -3,7 +3,7 @@ import os
 from flask import Flask
 from flask_wtf.csrf import CSRFProtect
 
-from app.entity import db
+from app.entity import UserAccount, db
 
 DEV_SECRET_KEY = "dev-only-not-secret"
 
@@ -18,6 +18,7 @@ def create_app(test_config: dict | None = None) -> Flask:
         SQLALCHEMY_DATABASE_URI=os.environ.get(
             "DATABASE_URL", "sqlite:///" + os.path.join(app.instance_path, "renomatch.db")
         ),
+        SEED_ON_EMPTY=os.environ.get("SEED_ON_EMPTY", "1") == "1",
     )
     if test_config:
         app.config.update(test_config)
@@ -29,9 +30,13 @@ def create_app(test_config: dict | None = None) -> Flask:
     csrf.init_app(app)
 
     from app.boundary import register_blueprints
+    from app.seed import register_seed_command, seed_database
 
     register_blueprints(app)
+    register_seed_command(app)
 
     with app.app_context():
         db.create_all()
+        if app.config["SEED_ON_EMPTY"] and db.session.query(UserAccount).first() is None:
+            seed_database()
     return app
