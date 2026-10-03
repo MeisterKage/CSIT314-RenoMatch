@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}{{ role_label }} · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<h1 class="h3">{{ role_label }} home</h1>
+<p>Welcome, {{ g.current_account.full_name }}.</p>
+<p class="text-body-secondary">Features for this role are added sprint by sprint.</p>
+{% endblock %}
