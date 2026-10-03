@@ -1,11 +1,12 @@
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 from flask.views import MethodView
 
-from app.boundary.auth_guard import ROLE_HOME, load_current_account
+from app.boundary.auth_guard import ROLE_HOME, load_current_account, login_required
 from app.control.errors import LoginError, ValidationError
 from app.control.login_controller import LoginController
 from app.control.logout_controller import LogoutController
 from app.control.register_controller import RegisterController
+from app.control.change_password_controller import ChangePasswordController
 
 bp = Blueprint("auth", __name__)
 bp.before_app_request(load_current_account)
@@ -71,6 +72,29 @@ class RegisterPage(MethodView):
         return redirect(url_for("auth.login"))
 
 
+class ChangePasswordPage(MethodView):
+    """Boundary for US44: change own password."""
+
+    decorators = [login_required]
+
+    def get(self):
+        return render_template("auth/change_password.html", errors={})
+
+    def post(self):
+        try:
+            ChangePasswordController().change_password(
+                g.current_account.id,
+                request.form.get("current_password", ""),
+                request.form.get("new_password", ""),
+                request.form.get("confirm_password", ""),
+            )
+        except ValidationError as error:
+            return render_template("auth/change_password.html", errors=error.errors)
+        flash("Password changed.", "success")
+        return redirect(url_for(ROLE_HOME[g.current_account.role]))
+
+
 bp.add_url_rule("/login", view_func=LoginPage.as_view("login"))
 bp.add_url_rule("/logout", view_func=LogoutAction.as_view("logout"))
 bp.add_url_rule("/register", view_func=RegisterPage.as_view("register"))
+bp.add_url_rule("/account/password", view_func=ChangePasswordPage.as_view("change_password"))
