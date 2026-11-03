@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}User profiles · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section-head">
+      <h1 class="page-title">User profiles</h1>
+      <p>A profile groups accounts that share one role. Suspending a profile blocks login for all its accounts. Every change is written to the audit log.</p>
+    </div>
+    <div class="toolbar">
+      <a class="button" href="{{ url_for('admin.profile_new') }}">Create profile</a>
+    </div>
+    <form class="filters filters--accounts" method="get" action="{{ url_for('admin.profiles') }}">
+      <div class="field">
+        <label for="keyword">Search</label>
+        <input id="keyword" name="keyword" value="{{ filters.keyword }}" placeholder="Name or description">
+      </div>
+      <div class="field">
+        <label for="role">Role</label>
+        <select id="role" name="role">
+          <option value="">All roles</option>
+          {% for role in roleTypes %}<option value="{{ role }}"{% if filters.role == role %} selected{% endif %}>{{ role|capitalize }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="status">Status</label>
+        <select id="status" name="status">
+          <option value="">All statuses</option>
+          {% for status in statuses %}<option value="{{ status }}"{% if filters.status == status %} selected{% endif %}>{{ status }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="filters__actions">
+        <button class="button" type="submit">Search</button>
+        {% if hasFilters %}<a class="button button--outline" href="{{ url_for('admin.profiles') }}">Clear</a>{% endif %}
+      </div>
+    </form>
+
+    {% if profiles %}
+    <p class="result-count muted">{{ profiles|length }} profile{{ '' if profiles|length == 1 else 's' }}</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr><th>Name</th><th>Role</th><th>Accounts</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for profile in profiles %}
+          <tr>
+            <td><a href="{{ url_for('admin.profile_view', profileId=profile.profileId) }}">{{ profile.name }}</a>{% if profile.description %}<br><span class="muted">{{ profile.description }}</span>{% endif %}</td>
+            <td>{{ profile.roleType|capitalize }}</td>
+            <td>{{ profile.accountCount }}</td>
+            <td><span class="badge{% if profile.status == 'Active' %} badge--ok{% else %} badge--warn{% endif %}">{{ profile.status }}</span></td>
+            <td>
+              <div class="row-actions">
+                <a href="{{ url_for('admin.profile_edit', profileId=profile.profileId) }}">Edit</a>
+                {% if profile.status == 'Active' and profile.profileId != g.current_account.profileId %}
+                <form method="post" action="{{ url_for('admin.profile_suspend', profileId=profile.profileId) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+                  <button class="link-button" type="submit">Suspend</button>
+                </form>
+                {% elif profile.status == 'Suspended' %}
+                <form method="post" action="{{ url_for('admin.profile_reactivate', profileId=profile.profileId) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+                  <button class="link-button" type="submit">Reactivate</button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="empty">No profiles match your search.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
