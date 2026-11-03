@@ -325,3 +325,51 @@ class IDPEntity(db.Model):
         record.featuredDate = None
         db.session.commit()
         return True
+
+    @classmethod
+    def getViewCount(cls, idpId: int) -> int:
+        """US-43 step 1.1.1: the IDP's viewCount, 0 when it has none or does not exist."""
+        record = db.session.get(cls, idpId)
+        return record.viewCount if record is not None else 0
+
+    @classmethod
+    def getShortlistCount(cls, idpId: int) -> int:
+        """US-44: the IDP's shortlistCount, 0 when it has none or does not exist."""
+        record = db.session.get(cls, idpId)
+        return record.shortlistCount if record is not None else 0
+
+    @classmethod
+    def getInterestDashboard(cls, designerId: int) -> dict:
+        """US-46: views and shortlists across the designer's IDPs, Removed ones left out.
+
+        byStyle and byCategory are lists of (name, views, shortlists), most views first.
+        topIDPs is the 5 IDPs with the most views. maxValue is the largest views or shortlists
+        figure shown, which the page uses to size its bars.
+        """
+        idps = (
+            db.session.query(cls)
+            .filter(cls.designerId == designerId, cls.status != "Removed")
+            .order_by(cls.viewCount.desc(), cls.idpId)
+            .all()
+        )
+        byStyle: dict[str, list[int]] = {}
+        byCategory: dict[str, list[int]] = {}
+        for idp in idps:
+            for totals, name in ((byStyle, idp.style), (byCategory, idp.category.name)):
+                pair = totals.setdefault(name, [0, 0])
+                pair[0] += idp.viewCount
+                pair[1] += idp.shortlistCount
+
+        def ranked(totals):
+            rows = [(name, views, shortlists) for name, (views, shortlists) in totals.items()]
+            return sorted(rows, key=lambda row: (-row[1], -row[2], row[0]))
+
+        figures = [max(idp.viewCount, idp.shortlistCount) for idp in idps]
+        for totals in (byStyle, byCategory):
+            figures += [max(pair) for pair in totals.values()]
+        return {
+            "byStyle": ranked(byStyle),
+            "byCategory": ranked(byCategory),
+            "topIDPs": idps[:5],
+            "maxValue": max(figures, default=0),
+        }

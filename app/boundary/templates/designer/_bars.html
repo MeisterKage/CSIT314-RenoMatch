@@ -1,0 +1,14 @@
+{# One bar list: rows of (name, views, shortlists). Bars are sized against maxValue and every
+   row also states its numbers in text. #}
+<ul class="bars">
+  {% for name, views, shortlists in rows %}
+  <li>
+    <div class="bars__label">
+      <span>{{ name }}</span>
+      <span class="bars__figures">{{ views }} views, {{ shortlists }} shortlists</span>
+    </div>
+    <div class="bars__track" aria-hidden="true"><span class="bars__fill" style="width: {{ (views * 100 / maxValue)|round(1) if maxValue else 0 }}%"></span></div>
+    <div class="bars__track" aria-hidden="true"><span class="bars__fill bars__fill--shortlist" style="width: {{ (shortlists * 100 / maxValue)|round(1) if maxValue else 0 }}%"></span></div>
+  </li>
+  {% endfor %}
+</ul>

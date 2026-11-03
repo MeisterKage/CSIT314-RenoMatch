@@ -7,6 +7,8 @@ from app.control.delete_idp_controller import DeleteIDPController
 from app.control.search_my_idps_controller import SearchMyIDPsController
 from app.control.update_idp_controller import UpdateIDPController
 from app.control.view_company_info_controller import ViewCompanyInfoController
+from app.control.view_idp_shortlist_count_controller import ViewIDPShortlistCountController
+from app.control.view_idp_view_count_controller import ViewIDPViewCountController
 from app.control.view_my_idp_controller import ViewMyIDPController
 from app.entity import CategoryEntity
 from app.entity.idp import IDP_STAGES, PROPERTY_TYPES, STYLES
@@ -134,24 +136,36 @@ class MyPortfolioPage(MethodView):
 
 
 class MyIDPDetailsPage(MethodView):
-    """Boundary for US-39 (view own IDP) and US-41 (delete own IDP).
+    """Boundary for US-39 (view own IDP), US-41 (delete own IDP), US-43 (view count) and
+    US-44 (shortlist count).
 
-    The controllers are held as `viewMyIDPController` and `deleteController`, leaving
-    `controller` free for the view count controller of US-43.
+    `controller` is the ViewIDPViewCountController of the US-43 class diagram. The others are
+    held as `viewMyIDPController`, `shortlistController` and `deleteController`. In the US-43
+    sequence `get` is step 1 (select IDP). The display methods take no argument, as in the
+    class diagram, so the page keeps what they show in `idp`, `viewCount` and `shortlistCount`.
     """
 
     decorators = [role_required("designer")]
 
     def __init__(self):
+        self.controller = ViewIDPViewCountController()
         self.viewMyIDPController = ViewMyIDPController()
+        self.shortlistController = ViewIDPShortlistCountController()
         self.deleteController = DeleteIDPController()
         self.message = None
+        self.idp = None
+        self.viewCount = 0
+        self.shortlistCount = 0
 
     def get(self, idpId):
-        idp = self.viewMyIDPController.getMyIDP(g.current_account.userId, idpId)
-        if idp is None:
+        self.idp = self.viewMyIDPController.getMyIDP(g.current_account.userId, idpId)
+        if self.idp is None:
             abort(404)
-        return self.displayIDP(idp)
+        self.shortlistCount = self.shortlistController.getShortlistCount(idpId)
+        self.viewCount = self.controller.getViewCount(idpId)  # 1.1
+        if self.viewCount > 0:  # [viewCount > 0]
+            return self.displayViewCount()  # 1.2
+        return self.displayNoViews()  # [2a. not viewed yet] 1.3
 
     def post(self, idpId):
         """Delete: POST /designer/portfolio/<idpId>/delete."""
@@ -160,8 +174,19 @@ class MyIDPDetailsPage(MethodView):
         self.message = SUCCESS_REMOVED
         return self.displayMessage()
 
-    def displayIDP(self, idp):
-        return render_template("designer/my_idp.html", idp=idp)
+    def displayViewCount(self):
+        return self.displayIDP(f"{self.viewCount} views")
+
+    def displayNoViews(self):
+        return self.displayIDP("0 views")
+
+    def displayIDP(self, viewsText):
+        return render_template(
+            "designer/my_idp.html",
+            idp=self.idp,
+            viewsText=viewsText,
+            shortlistsText=f"{self.shortlistCount} shortlists",
+        )
 
     def displayMessage(self):
         flash(self.message, "success")

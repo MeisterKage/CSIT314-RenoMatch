@@ -38,7 +38,7 @@ def test_pages_have_skip_link_to_main_content(client):
     "role, home, tool, status",
     [
         ("admin", "/admin/", b"Failed logins", b"Coming in Sprint 4"),
-        ("designer", "/designer/", b"Project interest", b"Coming in Sprint 3"),
+        ("designer", "/designer/", b"Project interest", b"Available"),
         ("customer", "/customer/", b"Search designs", b"Coming in Sprint 3"),
         ("platform", "/platform/", b"Activity reports", b"Coming in Sprint 3"),
     ],
