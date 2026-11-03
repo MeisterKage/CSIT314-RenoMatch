@@ -104,9 +104,7 @@ def test_edit_note_from_favourites_page_returns_there(client, make_idp, make_acc
     user = customer_login(make_account, login)
     idp = make_idp()
     FavouriteEntity.saveFavourite(user.userId, idp.idpId, "old")
-    resp = client.post(
-        f"/idps/{idp.idpId}/favourite", data={"note": "new", "next": "favourites"}
-    )
+    resp = client.post(f"/idps/{idp.idpId}/favourite", data={"note": "new", "next": "favourites"})
     assert resp.headers["Location"].endswith("/favourites")
     assert FavouriteEntity.query.one().note == "new"
 

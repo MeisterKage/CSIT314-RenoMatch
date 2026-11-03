@@ -1,11 +1,15 @@
-from flask import Blueprint, abort, flash, g, render_template, request
+from flask import Blueprint, abort, flash, g, redirect, render_template, request, url_for
 from flask.views import MethodView
 
+from app.boundary.auth_guard import role_required
 from app.control.browse_idps_controller import BrowseIDPsController
+from app.control.save_favourite_controller import SaveFavouriteController
 from app.control.search_idps_controller import SearchIDPsController
 from app.control.view_designer_profile_controller import ViewDesignerProfileController
+from app.control.view_favourites_controller import ViewFavouritesController
 from app.control.view_idp_details_controller import ViewIDPDetailsController
 from app.entity import CategoryEntity
+from app.entity.favourite import NOTE_MAX_LENGTH
 from app.entity.idp import PROPERTY_TYPES, STYLES
 
 bp = Blueprint("browse", __name__)
@@ -88,13 +92,16 @@ class BrowseIDPsPage(MethodView):
 
 
 class IDPDetailsPage(MethodView):
-    """Boundary for US-10: one IDP with its photos, details and designer link.
+    """Boundary for US-10 (one IDP with its photos, details and designer link) and US-14.
 
-    US-14 (save favourite) and US-18 (send enquiry) add their forms to this page.
+    US-14 adds the save-favourite form for customers and handles its POST. US-18 (send
+    enquiry) adds its form to this page.
     """
 
     def __init__(self):
         self.controller = ViewIDPDetailsController()
+        self.saveController = SaveFavouriteController()
+        self.favouritesController = ViewFavouritesController()
 
     def get(self, idpId):
         viewerId = g.current_account.userId if g.current_account else None
@@ -103,8 +110,29 @@ class IDPDetailsPage(MethodView):
             abort(404)
         return self.displayIDP(idp)
 
+    @role_required("customer")
+    def post(self, idpId):
+        note = request.form.get("note", "").strip()
+        goBack = url_for("browse.idp_details", idpId=idpId)
+        if request.form.get("next") == "favourites":
+            goBack = url_for("favourites.favourites")
+        if len(note) > NOTE_MAX_LENGTH:
+            flash(f"Keep your note to {NOTE_MAX_LENGTH} characters or fewer.", "danger")
+            return redirect(goBack)
+        favourite = self.saveController.saveFavourite(g.current_account.userId, idpId, note)
+        if favourite is None:
+            abort(404)
+        return self.displayMessage(goBack)
+
+    def displayMessage(self, goBack):
+        flash("Saved to your favourites.", "success")
+        return redirect(goBack)
+
     def displayIDP(self, idp):
-        return render_template("browse/idp_details.html", idp=idp)
+        favourite = None
+        if g.current_account and g.current_account.role == "customer":
+            favourite = self.favouritesController.getFavourite(g.current_account.userId, idp.idpId)
+        return render_template("browse/idp_details.html", idp=idp, favourite=favourite)
 
 
 class DesignerProfilePage(MethodView):
@@ -130,6 +158,11 @@ class DesignerProfilePage(MethodView):
 
 bp.add_url_rule("/idps", view_func=BrowseIDPsPage.as_view("idps"))
 bp.add_url_rule("/idps/<int:idpId>", view_func=IDPDetailsPage.as_view("idp_details"))
+bp.add_url_rule(
+    "/idps/<int:idpId>/favourite",
+    view_func=IDPDetailsPage.as_view("save_favourite"),
+    methods=["POST"],
+)
 bp.add_url_rule(
     "/designers/<int:designerId>", view_func=DesignerProfilePage.as_view("designer_profile")
 )
