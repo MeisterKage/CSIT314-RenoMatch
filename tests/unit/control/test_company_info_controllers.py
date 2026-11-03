@@ -32,7 +32,8 @@ def test_create_then_get(make_account):
     assert ViewCompanyInfoController().getCompanyInfo(designer.userId) is None
     created = CreateCompanyInfoController().createCompanyInfo(designer.userId, **VALID)
     assert created.name == "Studio Oak"
-    assert ViewCompanyInfoController().getCompanyInfo(designer.userId).companyId == created.companyId
+    found = ViewCompanyInfoController().getCompanyInfo(designer.userId)
+    assert found.companyId == created.companyId
 
 
 def test_only_one_record_per_designer(make_account):
