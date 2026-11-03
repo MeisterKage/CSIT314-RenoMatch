@@ -156,7 +156,8 @@ def test_customer_with_history_but_no_matches_sees_the_message(
     client, make_idp, make_account, make_category, login
 ):
     user = customer(make_account, login)
-    view(user, make_idp(style="Modern", category=make_category()))
+    saved = make_idp(style="Modern", category=make_category())
+    FavouriteEntity.saveFavourite(user.userId, saved.idpId, "")
     make_idp(style="Luxury", category=make_category(), title="Unrelated")
     page = client.get("/").data.decode()
     assert "No recommendations yet. Browse IDPs to get personalised suggestions" in page

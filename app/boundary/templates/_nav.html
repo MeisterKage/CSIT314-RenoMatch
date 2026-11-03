@@ -4,7 +4,8 @@
 {% if g.current_account %}
   <span class="who">{{ g.current_account.name }}</span>
   {% if g.current_account.role == 'customer' %}<a href="{{ url_for('favourites.favourites') }}">Favourites</a>
-  <a href="{{ url_for('enquiries.customer_enquiries') }}">Enquiries</a>{% endif %}
+  <a href="{{ url_for('enquiries.customer_enquiries') }}">Enquiries</a>
+  <a href="{{ url_for('compare.compare') }}">Compare ({{ compareCount }})</a>{% endif %}
   {% if g.current_account.role == 'designer' %}<a href="{{ url_for('enquiries.designer_enquiries') }}">Enquiries</a>{% endif %}
   <a href="{{ url_for(ROLE_HOME[g.current_account.role]) }}">Home</a>
   <form method="post" action="{{ url_for('auth.logout') }}">
