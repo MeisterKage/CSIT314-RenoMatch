@@ -32,7 +32,8 @@ def lock(account):
 
 
 @pytest.mark.parametrize(
-    "path", ["/admin/accounts", "/admin/accounts/new", "/admin/accounts/1", "/admin/accounts/1/edit"]
+    "path",
+    ["/admin/accounts", "/admin/accounts/new", "/admin/accounts/1", "/admin/accounts/1/edit"],
 )
 def test_pages_need_an_admin(client, make_account, login, path):
     make_account(role="customer", username="cust")

@@ -1,4 +1,4 @@
-from app.entity import UserAccountEntity
+from app.entity import UserAccountEntity, UserProfileEntity
 
 
 class SearchUserAccountsController:
@@ -9,3 +9,7 @@ class SearchUserAccountsController:
 
     def searchUserAccounts(self, keyword: str, profile: str, status: str):
         return self.entity.searchUserAccounts(keyword, profile, status)
+
+    def getProfiles(self):
+        """The profiles offered in the profile filter and the account form."""
+        return UserProfileEntity.findAll()
