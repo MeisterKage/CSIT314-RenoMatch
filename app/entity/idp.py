@@ -29,6 +29,17 @@ STYLES = (
 )
 
 
+def _publicDesigner():
+    """A condition for IDPs whose designer may be shown: an Active, not anonymised account."""
+    from app.entity.user_account import UserAccountEntity
+
+    return IDPEntity.designerId.in_(
+        select(UserAccountEntity.userId).where(
+            UserAccountEntity.status == "Active", UserAccountEntity.isAnonymised.is_(False)
+        )
+    )
+
+
 class IDPEntity(db.Model):
     """An interior design project (IDP) in a designer's portfolio.
 
@@ -86,10 +97,15 @@ class IDPEntity(db.Model):
         keyword matches the title or description, ignoring case. Blank or None filters
         are skipped. The budget range includes both ends.
         """
-        query = select(cls).where(cls.status == "Active")
+        query = select(cls).where(cls.status == "Active", _publicDesigner())
         if keyword and keyword.strip():
-            pattern = f"%{keyword.strip()}%"
-            query = query.where(or_(cls.title.ilike(pattern), cls.description.ilike(pattern)))
+            word = keyword.strip()
+            query = query.where(
+                or_(
+                    cls.title.icontains(word, autoescape=True),
+                    cls.description.icontains(word, autoescape=True),
+                )
+            )
         if categoryId is not None:
             query = query.where(cls.categoryId == categoryId)
         if style:
@@ -111,7 +127,7 @@ class IDPEntity(db.Model):
         None when the IDP does not exist or is not Active, and records nothing.
         """
         idp = db.session.get(cls, idpId)
-        if idp is None or idp.status != "Active":
+        if idp is None or idp.status != "Active" or not cls._designerIsPublic(idp):
             return None
         if viewerId != idp.designerId:
             db.session.add(
@@ -124,12 +140,17 @@ class IDPEntity(db.Model):
             db.session.refresh(idp)
         return idp
 
+    @staticmethod
+    def _designerIsPublic(idp) -> bool:
+        designer = idp.designer
+        return designer.status == "Active" and not designer.isAnonymised
+
     @classmethod
     def getActiveByDesigner(cls, designerId: int) -> "list[IDPEntity]":
         """US-11: a designer's Active IDPs, newest first."""
         return (
             db.session.query(cls)
-            .filter_by(designerId=designerId, status="Active")
+            .filter(cls.designerId == designerId, cls.status == "Active", _publicDesigner())
             .order_by(cls.createdAt.desc(), cls.idpId.desc())
             .all()
         )
@@ -142,7 +163,9 @@ class IDPEntity(db.Model):
         """
         found = {
             idp.idpId: idp
-            for idp in db.session.query(cls).filter(cls.idpId.in_(idpIds), cls.status == "Active")
+            for idp in db.session.query(cls).filter(
+                cls.idpId.in_(idpIds), cls.status == "Active", _publicDesigner()
+            )
         }
         return [found[idpId] for idpId in idpIds if idpId in found]
 
@@ -151,7 +174,7 @@ class IDPEntity(db.Model):
         """US-12 step 1.1.2: the top 10 Active IDPs by viewCount."""
         return (
             db.session.query(cls)
-            .filter_by(status="Active")
+            .filter(cls.status == "Active", _publicDesigner())
             .order_by(cls.viewCount.desc(), cls.idpId.desc())
             .limit(RECOMMENDATION_LIMIT)
             .all()
@@ -162,7 +185,7 @@ class IDPEntity(db.Model):
         """US-60 home page: the 6 most recently featured Active IDPs."""
         return (
             db.session.query(cls)
-            .filter_by(status="Active", isFeatured=True)
+            .filter(cls.status == "Active", cls.isFeatured.is_(True), _publicDesigner())
             .order_by(cls.featuredDate.desc(), cls.idpId.desc())
             .limit(FEATURED_LIMIT)
             .all()
@@ -171,7 +194,11 @@ class IDPEntity(db.Model):
     @classmethod
     def countFeaturedIDPs(cls) -> int:
         """US-60 step 1.1.1: how many Active IDPs are featured."""
-        return db.session.query(cls).filter_by(status="Active", isFeatured=True).count()
+        return (
+            db.session.query(cls)
+            .filter(cls.status == "Active", cls.isFeatured.is_(True), _publicDesigner())
+            .count()
+        )
 
     @classmethod
     def setFeatured(cls, idpId: int, featured: bool) -> bool:
@@ -217,7 +244,7 @@ class IDPEntity(db.Model):
         categoryIds = {idp.categoryId for idp in history}
         styles = {idp.style for idp in history}
         candidates = db.session.query(cls).filter(
-            cls.status == "Active", cls.idpId.notin_(savedIds)
+            cls.status == "Active", cls.idpId.notin_(savedIds), _publicDesigner()
         )
         scored = [
             ((idp.categoryId in categoryIds) + (idp.style in styles), idp)
@@ -438,6 +465,7 @@ class IDPEntity(db.Model):
             .join(PlatformActivityEntity, PlatformActivityEntity.idpId == cls.idpId)
             .filter(
                 cls.designerId == designerId,
+                cls.status == "Active",
                 PlatformActivityEntity.timestamp >= since,
                 PlatformActivityEntity.activityType.in_(("view", "shortlist")),
             )

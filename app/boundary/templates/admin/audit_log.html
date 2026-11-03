@@ -35,7 +35,7 @@
           <tr>
             <td>{{ log.timestamp.strftime('%d %b %Y, %H:%M') }}</td>
             <td>{{ log.admin.name }}</td>
-            <td>{{ log.action }}{% if log.details %}<br><span class="muted">{{ log.details }}</span>{% endif %}</td>
+            <td>{{ log.action|auditActionLabel }}{% if log.details %}<br><span class="muted">{{ log.details }}</span>{% endif %}</td>
             <td>{{ log.targetType }} #{{ log.targetId }}</td>
           </tr>
           {% endfor %}

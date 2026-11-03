@@ -31,9 +31,11 @@ class FavouriteEntity(db.Model):
 
         A new favourite adds a `shortlist` PlatformActivityEntity and increments the IDP's
         shortlistCount in the same commit. Updating a note counts nothing. Returns None
-        when the IDP does not exist or is not Active.
+        when the IDP does not exist or is not Active, or the note is over 255 characters.
         """
         note = (note or "").strip()
+        if len(note) > NOTE_MAX_LENGTH:
+            return None
         idp = db.session.get(IDPEntity, idpId)
         if idp is None or idp.status != "Active":
             return None
@@ -77,12 +79,12 @@ class FavouriteEntity(db.Model):
         """US-17: the user's favourites matching the keyword in title, description or note."""
         query = cls._activeQuery(userId)
         if keyword and keyword.strip():
-            pattern = f"%{keyword.strip()}%"
+            word = keyword.strip()
             query = query.filter(
                 or_(
-                    IDPEntity.title.ilike(pattern),
-                    IDPEntity.description.ilike(pattern),
-                    cls.note.ilike(pattern),
+                    IDPEntity.title.icontains(word, autoescape=True),
+                    IDPEntity.description.icontains(word, autoescape=True),
+                    cls.note.icontains(word, autoescape=True),
                 )
             )
         return query.all()

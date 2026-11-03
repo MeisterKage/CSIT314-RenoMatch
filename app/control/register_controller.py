@@ -5,7 +5,7 @@ from app.control.validation import (
     phone_problem,
     username_problem,
 )
-from app.entity import PlatformActivityEntity, UserAccountEntity, UserProfileEntity
+from app.entity import UserAccountEntity, UserProfileEntity
 
 REGISTRABLE_ROLES = ("customer", "designer")
 
@@ -57,6 +57,6 @@ class RegisterController:
             name=full_name,
             profile=profile,
             phone=phone,
+            recordRegistration=True,  # counted by US-56, saved in the account's own commit
         )
-        PlatformActivityEntity.recordActivity("register", account.userId)  # counted by US-56
         return account

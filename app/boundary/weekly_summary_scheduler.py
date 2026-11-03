@@ -25,7 +25,9 @@ class WeeklySummaryScheduler(MethodView):
         expected = os.environ.get("WEEKLY_SUMMARY_TOKEN")
         if not expected:
             abort(404)  # no token configured: the endpoint is disabled
-        if not hmac.compare_digest(request.headers.get(TOKEN_HEADER, ""), expected):
+        if not hmac.compare_digest(
+            request.headers.get(TOKEN_HEADER, "").encode(), expected.encode()
+        ):
             abort(403)
         self.triggerWeeklySummary()
         return {"status": "sent"}

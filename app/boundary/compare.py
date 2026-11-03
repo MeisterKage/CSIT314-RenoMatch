@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from flask.views import MethodView
 
+from app.boundary.auth_guard import role_required
 from app.control.compare_idps_controller import CompareIDPsController
 
 bp = Blueprint("compare", __name__)
@@ -17,7 +18,9 @@ UNAVAILABLE = "One IDP is no longer available"
 def backTo() -> str:
     """The page the user ticked from (path only), else the comparison page."""
     path = urlparse(request.referrer or "").path
-    return path if path.startswith("/") else url_for("compare.compare")
+    if path.startswith("/") and not path.startswith("//") and "\\" not in path:
+        return path
+    return url_for("compare.compare")
 
 
 def selectedIds() -> list[int]:
@@ -40,10 +43,13 @@ class CompareIDPPage(MethodView):
     is held in `idps` and `message`.
     """
 
+    decorators = [role_required("customer")]
+
     def __init__(self):
         self.controller = CompareIDPsController()
         self.idps = []
         self.message = None
+        self.view = "comparison"
 
     def get(self):
         idpIds = selectedIds()
@@ -51,13 +57,15 @@ class CompareIDPPage(MethodView):
         if len(idpIds) < MIN_SELECTED:
             self.message = TOO_FEW
             self.idps = []
-            return self.displayMessage()
-        if len(self.idps) < len(idpIds):
+            self.displayMessage()
+        elif len(self.idps) < len(idpIds):
             session["compareIds"] = [idp.idpId for idp in self.idps]
             self.displayComparison()
             self.message = UNAVAILABLE
-            return self.displayMessage()
-        return self.displayComparison()
+            self.displayMessage()
+        else:
+            self.displayComparison()
+        return self.render()
 
     def post(self):
         if request.endpoint == "compare.clear":
@@ -71,19 +79,24 @@ class CompareIDPPage(MethodView):
         if idpId not in idpIds:
             if len(idpIds) >= MAX_SELECTED:
                 self.message = TOO_MANY
-                return self.displayMessage()
+                self.displayMessage()
+                flash(self.message, "danger")
+                return redirect(backTo())
             session["compareIds"] = idpIds + [idpId]
         return redirect(backTo())
 
     def displayComparison(self):
-        """2.2: the table of style, budget, location, property type, category and designer."""
-        return render_template("compare/compare.html", idps=self.idps, message=self.message)
+        """2.2: the table of style, budget, location, property type, category and designer.
+        It sets what the page shows and `render` draws it once, so a page that shows the
+        table and then the 3a message is drawn a single time."""
+        self.view = "comparison"
 
     def displayMessage(self):
-        """1.1, 2.3 and 2.4: `message`. After a tick it is flashed on the page the user was on."""
-        if request.method == "POST":
-            flash(self.message, "danger")
-            return redirect(backTo())
+        """1.1, 2.3 and 2.4: `message`. After a tick `post` flashes it on the page the user
+        was on. On the comparison page it is drawn with the table, if there is one."""
+        self.view = "message"
+
+    def render(self):
         return render_template("compare/compare.html", idps=self.idps, message=self.message)
 
 

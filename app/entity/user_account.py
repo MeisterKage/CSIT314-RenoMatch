@@ -6,6 +6,7 @@ from sqlalchemy import func, or_
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.entity.db import db, utcnow
+from app.entity.platform_activity import PlatformActivityEntity
 from app.entity.user_profile import UserProfileEntity
 
 ACCOUNT_STATUSES = ("Active", "Suspended")
@@ -52,8 +53,10 @@ class UserAccountEntity(db.Model):
 
     @classmethod
     def createUserAccount(
-        cls, username, email, password, name, profile, phone=""
+        cls, username, email, password, name, profile, phone="", recordRegistration=False
     ) -> "UserAccountEntity":
+        """Create the account. With recordRegistration, the `register` PlatformActivityEntity row
+        is saved in the same commit, so a registration is never counted without its account."""
         account = cls(
             username=username.lower(),
             email=email.lower(),
@@ -63,6 +66,9 @@ class UserAccountEntity(db.Model):
         )
         account.setPassword(password)
         db.session.add(account)
+        if recordRegistration:
+            db.session.flush()
+            db.session.add(PlatformActivityEntity(activityType="register", userId=account.userId))
         db.session.commit()
         return account
 

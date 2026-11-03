@@ -34,6 +34,7 @@
         <a class="button button--full" href="{{ url_for('browse.designer_profile', designerId=idp.designerId) }}">View designer</a>
 
         {# US-13: the compare selection is handled by POST /compare/select. #}
+        {% if g.current_account and g.current_account.role == 'customer' %}
         <form class="compare-form" method="post" action="/compare/select">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <label class="compare-form__check">
@@ -42,6 +43,7 @@
           </label>
           <button class="button button--outline" type="submit">Add to compare</button>
         </form>
+        {% endif %}
 
         {% if g.current_account and g.current_account.role == 'customer' %}
         <form class="favourite-form" method="post" action="{{ url_for('browse.save_favourite', idpId=idp.idpId) }}">

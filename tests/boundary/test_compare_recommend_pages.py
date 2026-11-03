@@ -223,7 +223,7 @@ def test_3a_branch_renders_the_page_once(signedIn, client, make_idp, monkeypatch
     assert len(calls) == 1
 
 
-@pytest.mark.parametrize("referrer", ["//evil.example/x", "/\\evil.example", "http://x.test//y"])
+@pytest.mark.parametrize("referrer", ["http://x.test//evil.example", "/\\evil.example", "http://x.test//y"])
 def test_backTo_rejects_double_slash_and_backslash_paths(
     signedIn, client, make_idp, referrer
 ):

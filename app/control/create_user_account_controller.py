@@ -48,6 +48,7 @@ class CreateUserAccountController:
             name=name,
             profile=profile,
             phone=phone,
+            recordRegistration=True,
         )
         AuditLogEntity.recordAction(
             adminId,

@@ -116,8 +116,9 @@ def test_details_page_shows_idp_and_designer_link(client, make_idp):
     assert f"/designers/{idp.designerId}".encode() in resp.data
 
 
-def test_details_page_has_compare_form(client, make_idp):
+def test_details_page_has_compare_form(client, make_idp, make_account, login):
     idp = make_idp()
+    login(make_account().username)
     page = client.get(f"/idps/{idp.idpId}").data
     assert b'action="/compare/select"' in page
     assert b'name="idpId"' in page
