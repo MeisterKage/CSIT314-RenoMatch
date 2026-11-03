@@ -575,7 +575,8 @@ fieldset legend {
 }
 
 .field input,
-.field select {
+.field select,
+.field textarea {
   width: 100%;
   padding: 0.8rem 1rem;
   border: 1.5px solid var(--line);
@@ -586,13 +587,19 @@ fieldset legend {
   transition: border-color 0.15s ease;
 }
 
+.field textarea {
+  resize: vertical;
+}
+
 .field input:hover,
-.field select:hover {
+.field select:hover,
+.field textarea:hover {
   border-color: #c3c8ca;
 }
 
 .field input:focus-visible,
-.field select:focus-visible {
+.field select:focus-visible,
+.field textarea:focus-visible {
   outline: none;
   border-color: var(--sage);
   box-shadow: 0 0 0 3px var(--sage-tint);
@@ -878,6 +885,26 @@ fieldset {
   align-items: center;
   gap: 0.5rem;
   font-weight: 600;
+}
+
+.favourite-form {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.favourite-form .field {
+  margin-bottom: 0.75rem;
+}
+
+.favourite-card .favourite-form {
+  margin-top: 0.75rem;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.favourite-remove {
+  margin-top: 0.5rem;
 }
 
 .h-small {

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Favourites · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section-head">
+      <h1 class="page-title">Your favourites</h1>
+      <p>Designs you have saved, with your notes. To change a note, edit it and save again.</p>
+    </div>
+    <form class="filters" method="get" action="{{ url_for('favourites.favourites') }}">
+      <div class="field filters__wide">
+        <label for="keyword">Search favourites</label>
+        <input id="keyword" name="keyword" value="{{ keyword }}" placeholder="Title, description or note">
+      </div>
+      <div class="filters__actions">
+        <button class="button" type="submit">Search</button>
+        {% if keyword %}<a class="button button--outline" href="{{ url_for('favourites.favourites') }}">Clear</a>{% endif %}
+      </div>
+    </form>
+
+    {% if favourites %}
+    <ul class="style-grid">
+      {% for favourite in favourites %}{% set idp = favourite.idp %}
+      <li class="idp-card favourite-card">
+        <a class="idp-card__link" href="{{ url_for('browse.idp_details', idpId=idp.idpId) }}">
+          {% if idp.photoUrls %}
+            <img src="{{ idp.photoUrls[0] }}" alt="{{ idp.title }}" loading="lazy" width="900" height="675">
+          {% else %}
+            <div class="idp-card__empty" role="img" aria-label="No photo yet"></div>
+          {% endif %}
+          <h3>{{ idp.title }}</h3>
+          <p>{{ idp.style }} · {{ idp.propertyType }} · {{ idp.location }}</p>
+          <p class="idp-card__budget">S${{ '{:,.0f}'.format(idp.budget) }}</p>
+        </a>
+        <form class="favourite-form" method="post" action="{{ url_for('browse.save_favourite', idpId=idp.idpId) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="favourites">
+          <div class="field">
+            <label for="note-{{ idp.idpId }}">Your note</label>
+            <textarea id="note-{{ idp.idpId }}" name="note" rows="2" maxlength="255" placeholder="Add a note">{{ favourite.note }}</textarea>
+          </div>
+          <button class="button button--outline" type="submit">Save note</button>
+        </form>
+        <form class="favourite-remove" method="post" action="{{ url_for('favourites.remove_favourite', idpId=idp.idpId) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="link-button" type="submit">Remove from favourites</button>
+        </form>
+      </li>
+      {% endfor %}
+    </ul>
+    {% elif keyword %}
+    <p class="empty">No favourites match your search.</p>
+    {% else %}
+    <p class="empty">You have no favourites yet. <a href="{{ url_for('browse.idps') }}">Browse designs</a> and save the ones you like.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

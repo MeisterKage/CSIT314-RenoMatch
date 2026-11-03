@@ -43,7 +43,18 @@
           <button class="button button--outline" type="submit">Add to compare</button>
         </form>
 
-        {# US-14 (save favourite) and US-18 (send enquiry) add their forms here. #}
+        {% if g.current_account and g.current_account.role == 'customer' %}
+        <form class="favourite-form" method="post" action="{{ url_for('browse.save_favourite', idpId=idp.idpId) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="field">
+            <label for="note">{{ 'Your note' if favourite else 'Add a note (optional)' }}</label>
+            <textarea id="note" name="note" rows="3" maxlength="255" placeholder="What do you like about this one?">{{ favourite.note if favourite else '' }}</textarea>
+          </div>
+          <button class="button button--outline button--full" type="submit">{{ 'Update note' if favourite else 'Save to favourites' }}</button>
+        </form>
+        {% endif %}
+
+        {# US-18 (send enquiry) adds its form here. #}
       </aside>
     </div>
   </div>
