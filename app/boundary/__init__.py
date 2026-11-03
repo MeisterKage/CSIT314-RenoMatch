@@ -5,6 +5,7 @@ def register_blueprints(app):
         audit_log,
         auth,
         browse,
+        categories,
         company_info,
         compare,
         customer,
@@ -15,6 +16,7 @@ def register_blueprints(app):
         platform,
         portfolio,
         public,
+        reports,
         reset_password,
         uploads,
         weekly_summary_scheduler,
@@ -22,7 +24,8 @@ def register_blueprints(app):
 
     for module in (
         public, auth, reset_password, account, browse, compare, company_info, admin, audit_log,
-        designer, customer, enquiries, favourites, interest, platform, portfolio, uploads,
+        designer, customer, enquiries, favourites, interest, platform, categories, reports,
+        portfolio, uploads,
         weekly_summary_scheduler
     ):
         app.register_blueprint(module.bp)

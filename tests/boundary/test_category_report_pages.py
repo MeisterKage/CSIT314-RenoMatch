@@ -6,7 +6,13 @@ from app.boundary.categories import ManageCategoriesPage
 from app.boundary.reports import ReportsPage
 from app.control.generate_monthly_report_controller import GenerateMonthlyReportController
 from app.control.search_categories_controller import SearchCategoriesController
-from app.entity import CategoryEntity, PlatformActivityEntity, UserAccountEntity, db
+from app.entity import (
+    CategoryEntity,
+    CompanyInfoEntity,
+    PlatformActivityEntity,
+    UserAccountEntity,
+    db,
+)
 from app.entity.db import utcnow
 
 
@@ -119,7 +125,8 @@ def test_update_category_rejects_another_categorys_name(client, manager, make_ca
     make_category(name="Taken")
     category = make_category(name="Mine")
     resp = client.post(
-        f"/platform/categories/{category.categoryId}/edit", data={"name": "TAKEN", "description": ""}
+        f"/platform/categories/{category.categoryId}/edit",
+        data={"name": "TAKEN", "description": ""},
     )
     assert resp.status_code == 200 and "already exists" in text(resp)
 
@@ -140,6 +147,8 @@ def test_suspended_category_is_hidden_from_browse_filter_and_add_idp(
     assert "Hidden One" not in text(client.get("/idps"))
     assert "Visible One" in text(client.get("/idps"))
     designer = make_account(role="designer", username="designer")
+    db.session.add(CompanyInfoEntity(designerId=designer.userId, name="Studio Oak"))
+    db.session.commit()
     login(designer.username)
     page = text(client.get("/designer/portfolio/new"))
     assert "Visible One" in page and "Hidden One" not in page
@@ -216,7 +225,8 @@ def test_monthly_report_shows_figures_and_change(client, manager, october):
 
 def test_monthly_report_for_a_future_month_shows_the_message(client, manager):
     future = (utcnow().date().replace(day=1) + timedelta(days=32)).replace(day=1)
-    page = text(client.get(f"/platform/reports?type=monthly&month={future.month}&year={future.year}"))
+    url = f"/platform/reports?type=monthly&month={future.month}&year={future.year}"
+    page = text(client.get(url))
     assert "Please select a past or current month" in page
     assert "IDP views" not in page
 

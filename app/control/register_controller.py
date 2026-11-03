@@ -5,7 +5,7 @@ from app.control.validation import (
     phone_problem,
     username_problem,
 )
-from app.entity import UserAccountEntity, UserProfileEntity
+from app.entity import PlatformActivityEntity, UserAccountEntity, UserProfileEntity
 
 REGISTRABLE_ROLES = ("customer", "designer")
 
@@ -50,7 +50,7 @@ class RegisterController:
 
         if errors:
             raise ValidationError(errors)
-        return UserAccountEntity.createUserAccount(
+        account = UserAccountEntity.createUserAccount(
             username=username,
             email=email,
             password=password,
@@ -58,3 +58,5 @@ class RegisterController:
             profile=profile,
             phone=phone,
         )
+        PlatformActivityEntity.recordActivity("register", account.userId)  # counted by US-56
+        return account

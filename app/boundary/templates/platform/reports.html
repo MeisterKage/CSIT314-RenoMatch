@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Reports · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+{% macro period(start, end) -%}
+  {%- if start == end %}{{ start.day }} {{ start.strftime('%b %Y') }}{% else %}{{ start.day }} {{ start.strftime('%b %Y') }} to {{ end.day }} {{ end.strftime('%b %Y') }}{% endif -%}
+{%- endmacro %}
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section-head">
+      <h1 class="page-title">Activity reports</h1>
+      <p>Platform activity for a day, a month or a date range, compared with the period before it.</p>
+    </div>
+    <nav class="tabs" aria-label="Report type">
+      <a href="{{ url_for('reports.reports', type='daily') }}"{% if reportType == 'daily' %} aria-current="page"{% endif %}>Daily</a>
+      <a href="{{ url_for('reports.reports', type='monthly') }}"{% if reportType == 'monthly' %} aria-current="page"{% endif %}>Monthly</a>
+      <a href="{{ url_for('reports.reports', type='custom') }}"{% if reportType == 'custom' %} aria-current="page"{% endif %}>Custom range</a>
+    </nav>
+
+    <form class="filters filters--audit" method="get" action="{{ url_for('reports.reports') }}">
+      <input type="hidden" name="type" value="{{ reportType }}">
+      {% if reportType == 'daily' %}
+      <div class="field">
+        <label for="date">Date</label>
+        <input id="date" name="date" type="date" value="{{ params.date }}" required>
+      </div>
+      {% elif reportType == 'monthly' %}
+      <div class="field">
+        <label for="month">Month</label>
+        <select id="month" name="month">
+          {% for number in months %}<option value="{{ number }}"{% if params.month == number|string %} selected{% endif %}>{{ ['January','February','March','April','May','June','July','August','September','October','November','December'][number - 1] }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="year">Year</label>
+        <select id="year" name="year">
+          {% for number in years %}<option value="{{ number }}"{% if params.year == number|string %} selected{% endif %}>{{ number }}</option>{% endfor %}
+        </select>
+      </div>
+      {% else %}
+      <div class="field">
+        <label for="startDate">From</label>
+        <input id="startDate" name="startDate" type="date" value="{{ params.startDate }}" required>
+      </div>
+      <div class="field">
+        <label for="endDate">To</label>
+        <input id="endDate" name="endDate" type="date" value="{{ params.endDate }}" required>
+      </div>
+      {% endif %}
+      <div class="filters__actions">
+        <button class="button" type="submit">Generate</button>
+      </div>
+    </form>
+
+    {% if message %}
+    <p class="flash flash--danger" role="alert">{{ message }}</p>
+    {% elif report %}
+    <h2 class="report-period">{{ period(report.startDate, report.endDate) }}</h2>
+    <p class="muted">Compared with {{ period(report.previous.startDate, report.previous.endDate) }}.</p>
+    {% if empty %}
+    <p class="empty">There was no activity in this period, so every figure is zero.</p>
+    {% endif %}
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr><th>Figure</th><th>This period</th><th>Previous period</th><th>Change</th></tr>
+        </thead>
+        <tbody>
+          {% for figure, label in figures %}
+          <tr>
+            <td>{{ label }}</td>
+            <td>{{ report|attr(figure) }}</td>
+            <td>{{ report.previous|attr(figure) }}</td>
+            <td>{% set change = report.change(figure) %}{{ '+' ~ change if change > 0 else change }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="toolbar">
+      <a class="button button--outline" href="{{ pdfUrl }}">Export PDF</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
