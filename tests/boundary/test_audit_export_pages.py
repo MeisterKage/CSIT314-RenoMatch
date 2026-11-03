@@ -46,9 +46,9 @@ def test_audit_page_wires_controller(app):
 
 def test_audit_log_lists_entries_newest_first_and_is_read_only(client, admin):
     addLog(admin, "suspend_account", datetime(2026, 1, 1, 9, 30), targetId=11)
-    assert page.index("Created account") < page.index("Suspended account")
+    addLog(admin, "create_account", datetime(2026, 2, 1, 14, 5), targetId=12)
     page = text(client.get("/admin/audit-log"))
-    assert page.index("create_account") < page.index("suspend_account")
+    assert page.index("Created account") < page.index("Suspended account")
     assert "Boss Person" in page
     assert "01 Jan 2026" in page and "09:30" in page
     assert "user_account" in page and "#11" in page
