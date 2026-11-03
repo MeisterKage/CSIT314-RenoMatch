@@ -42,9 +42,7 @@ def test_nav_links_per_role_are_concise(client, make_account, login, role):
 
 def test_visitor_nav_keeps_public_links(client):
     labels = navLabels(client.get("/").get_data(as_text=True))
-    assert labels[:2] == ["Browse designs", "How it works"] or {
-        "Browse designs", "How it works", "Log in", "Create account"
-    } <= set(labels)
+    assert {"Browse designs", "How it works", "Log in", "Create account"} <= set(labels)
 
 
 def test_nav_has_a_details_menu_for_the_role_links(client, make_account, login):

@@ -181,9 +181,30 @@ a {
   cursor: pointer;
 }
 
-.site-nav .who {
-  color: var(--stone);
-  font-size: 0.9375rem;
+.nav-menu {
+  position: relative;
+}
+
+.nav-menu summary {
+  display: none;
+  list-style: none;
+  cursor: pointer;
+  padding: 0.45rem 1rem;
+  border-radius: var(--pill);
+  background: var(--mist);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.nav-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.nav-menu__items {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  flex-wrap: wrap;
 }
 
 .site-nav .button {
@@ -1107,9 +1128,28 @@ fieldset {
     font-size: 0.875rem;
   }
 
-  .site-nav .who,
   .site-nav .nav-section {
     display: none;
+  }
+
+  .nav-menu summary {
+    display: block;
+  }
+
+  .nav-menu__items {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.5rem);
+    z-index: 20;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.9rem;
+    min-width: 12rem;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--white);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
   }
 
   .section {

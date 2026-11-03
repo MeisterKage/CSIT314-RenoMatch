@@ -1,8 +1,4 @@
-"""The tools each role's home page lists, with the sprint that delivers them.
-
-Sprint numbers follow section 7 of the design spec. A tool with an endpoint is
-available now and links to its page.
-"""
+"""The tools each role's home page lists. Every tool links to its page by endpoint."""
 
 from dataclasses import dataclass
 
@@ -11,16 +7,7 @@ from dataclasses import dataclass
 class Tool:
     name: str
     description: str
-    sprint: int | None = None
-    endpoint: str | None = None
-
-    @property
-    def available(self) -> bool:
-        return self.endpoint is not None
-
-    @property
-    def status(self) -> str:
-        return "Available" if self.available else f"Coming in Sprint {self.sprint}"
+    endpoint: str
 
 
 CHANGE_PASSWORD = Tool(

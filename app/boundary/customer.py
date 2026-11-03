@@ -7,16 +7,36 @@ from app.boundary.role_tools import CHANGE_PASSWORD, Tool
 bp = Blueprint("customer", __name__, url_prefix="/customer")
 
 TOOLS = [
-    Tool("Search designs", "Filter finished projects by style, property and budget.", sprint=3),
-    Tool("Favourites", "Save projects you like, with a note, and compare them later.", sprint=3),
-    Tool("Your details", "Keep your name, email and phone number up to date.", sprint=4),
-    Tool("Recommended for you", "Projects picked from what you have viewed and saved.", sprint=5),
+    Tool(
+        "Search designs",
+        "Filter finished projects by style, property and budget.",
+        endpoint="browse.idps",
+    ),
+    Tool(
+        "Favourites",
+        "Save projects you like, with a note, and compare them later.",
+        endpoint="favourites.favourites",
+    ),
+    Tool(
+        "Your details",
+        "Keep your name, email and phone number up to date.",
+        endpoint="account.account",
+    ),
+    Tool(
+        "Recommended for you",
+        "Projects picked from what you have viewed and saved.",
+        endpoint="public.home",
+    ),
     Tool(
         "Enquiries",
         "Ask a designer about price and availability.",
         endpoint="enquiries.customer_enquiries",
     ),
-    Tool("Compare designs", "Put up to three projects side by side.", sprint=5),
+    Tool(
+        "Compare designs",
+        "Put up to three projects side by side.",
+        endpoint="compare.compare",
+    ),
     CHANGE_PASSWORD,
 ]
 

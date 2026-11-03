@@ -4,14 +4,14 @@
 <div class="wrap page">
   <header class="role-head">
     <h1>{{ role_label }} home</h1>
-    <p>Welcome, {{ g.current_account.name }}. Here's what you can do now, and what each sprint adds.</p>
+    <p>Welcome, {{ g.current_account.name }}. Here's what you can do.</p>
   </header>
   <ul class="tools">
     {% for tool in tools %}
-    <li class="tool{% if tool.available %} tool--available{% endif %}">
-      <h3>{% if tool.available %}<a href="{{ url_for(tool.endpoint) }}">{{ tool.name }}</a>{% else %}{{ tool.name }}{% endif %}</h3>
+    <li class="tool tool--available">
+      <h3><a href="{{ url_for(tool.endpoint) }}">{{ tool.name }}</a></h3>
       <p>{{ tool.description }}</p>
-      <span class="tool__status">{{ tool.status }}</span>
+      <span class="tool__status">Available</span>
     </li>
     {% endfor %}
   </ul>

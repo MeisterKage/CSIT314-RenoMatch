@@ -10,13 +10,11 @@ TOOLS = [
     Tool(
         "Project categories",
         "Create, update, suspend and search project categories.",
-        sprint=2,
         endpoint="categories.categories",
     ),
     Tool(
         "Activity reports",
         "Daily, monthly and custom-range activity, with a PDF export.",
-        sprint=3,
         endpoint="reports.reports",
     ),
     Tool(

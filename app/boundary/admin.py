@@ -38,26 +38,26 @@ TOOLS = [
     Tool(
         "User accounts",
         "Create, view, update, suspend and search accounts.",
-        sprint=1,
         endpoint="admin.accounts",
     ),
     Tool(
         "User profiles",
         "Group accounts by role and suspend a whole role at once.",
-        sprint=1,
         endpoint="admin.profiles",
     ),
     Tool(
         "Audit log",
         "See which admin changed which account, and when.",
-        sprint=4,
         endpoint="audit_log.audit_log",
     ),
-    Tool("Failed logins", "Spot repeated failed logins and unlock genuine users.", sprint=4),
+    Tool(
+        "Failed logins",
+        "Spot locked accounts after repeated failed logins and unlock genuine users.",
+        endpoint="admin.accounts",
+    ),
     Tool(
         "Export accounts",
         "Download the account list as a CSV file.",
-        sprint=4,
         endpoint="admin.accounts",
     ),
     CHANGE_PASSWORD,
