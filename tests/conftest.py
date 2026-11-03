@@ -9,8 +9,8 @@ from tests.helpers import TEST_CONFIG, TEST_PASSWORD
 
 
 @pytest.fixture
-def app():
-    app = create_app(TEST_CONFIG)
+def app(tmp_path):
+    app = create_app({**TEST_CONFIG, "UPLOAD_FOLDER": str(tmp_path / "uploads")})
     with app.app_context():
         yield app
         db.session.remove()
