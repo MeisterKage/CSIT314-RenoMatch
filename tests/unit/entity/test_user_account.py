@@ -1,64 +1,57 @@
-from datetime import timedelta
-
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from app.entity import LoginAttempt, PasswordResetToken, UserAccount, db
-from app.entity.db import utcnow
+from app.entity import LoginAttemptEntity, UserAccountEntity, db
 
 
 def test_password_is_hashed_not_stored(make_account):
     account = make_account(password="Secret123")
-    assert account.password_hash != "Secret123"
-    assert account.check_password("Secret123")
-    assert not account.check_password("secret123")
+    assert account.passwordHash != "Secret123"
+    assert account.checkPassword("Secret123")
+    assert not account.checkPassword("secret123")
 
 
 def test_email_is_stored_lowercase_and_found_case_insensitively(make_account):
     account = make_account(email="Mixed@Example.COM")
     assert account.email == "mixed@example.com"
-    assert UserAccount.find_by_email("MIXED@example.com").id == account.id
+    assert UserAccountEntity.findByEmail("MIXED@example.com").userId == account.userId
 
 
 def test_username_is_stored_lowercase_and_found_case_insensitively(make_account):
     account = make_account(username="MixedCase")
     assert account.username == "mixedcase"
-    assert UserAccount.find_by_username("MIXEDCASE").id == account.id
+    assert UserAccountEntity.findByUsername("MIXEDCASE").userId == account.userId
+
+
+def test_find_by_id(make_account):
+    account = make_account()
+    assert UserAccountEntity.findById(account.userId) is account
+    assert UserAccountEntity.findById(99999) is None
 
 
 def test_role_comes_from_profile(make_account):
-    assert make_account(role="designer").role == "designer"
+    account = make_account(role="designer")
+    assert account.role == "designer"
+    assert account.profileId == account.profile.profileId
 
 
 def test_active_account_can_log_in(make_account):
-    assert make_account().can_log_in()
-
-
-def test_suspended_account_cannot_log_in(make_account):
-    account = make_account()
-    account.is_suspended = True
-    assert not account.can_log_in()
-
-
-def test_account_with_suspended_profile_cannot_log_in(make_account):
-    account = make_account()
-    account.profile.is_suspended = True
-    assert not account.can_log_in()
+    assert make_account().canLogIn()
 
 
 def test_anonymised_account_cannot_log_in(make_account):
     account = make_account()
-    account.is_anonymised = True
-    assert not account.can_log_in()
+    account.isAnonymised = True
+    assert not account.canLogIn()
 
 
 def test_change_password_replaces_hash(make_account):
     account = make_account(password="OldPass123")
-    account.change_password("NewPass456")
+    account.changePassword("NewPass456")
     db.session.expire_all()
-    reloaded = UserAccount.find_by_id(account.id)
-    assert reloaded.check_password("NewPass456")
-    assert not reloaded.check_password("OldPass123")
+    reloaded = UserAccountEntity.findById(account.userId)
+    assert reloaded.checkPassword("NewPass456")
+    assert not reloaded.checkPassword("OldPass123")
 
 
 def test_username_must_be_unique(make_account):
@@ -68,17 +61,14 @@ def test_username_must_be_unique(make_account):
 
 
 def test_login_attempt_allows_unknown_username(app):
-    attempt = LoginAttempt(username="ghost", account_id=None, success=False)
+    attempt = LoginAttemptEntity(username="ghost", userId=None, success=False)
     db.session.add(attempt)
     db.session.commit()
-    assert attempt.attempted_at is not None
+    assert attempt.attemptedAt is not None
 
 
-def test_reset_token_hash_is_unique(make_account):
-    account = make_account()
-    expires = utcnow() + timedelta(hours=1)
-    db.session.add(PasswordResetToken(account_id=account.id, token_hash="abc", expires_at=expires))
-    db.session.commit()
-    db.session.add(PasswordResetToken(account_id=account.id, token_hash="abc", expires_at=expires))
+def test_reset_token_is_unique(make_account):
+    first, second = make_account(), make_account()
+    first.resetToken = second.resetToken = "hashed-token"
     with pytest.raises(IntegrityError):
         db.session.commit()

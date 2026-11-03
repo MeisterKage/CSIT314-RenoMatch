@@ -6,14 +6,14 @@ from tests.helpers import TEST_PASSWORD
 
 
 def change(account, current=TEST_PASSWORD, new="N3wPassword", confirm="N3wPassword"):
-    ChangePasswordController().change_password(account.id, current, new, confirm)
+    ChangePasswordController().change_password(account.userId, current, new, confirm)
 
 
 def test_change_password_updates_the_hash(make_account):
     account = make_account()
     change(account)
-    assert account.check_password("N3wPassword")
-    assert not account.check_password(TEST_PASSWORD)
+    assert account.checkPassword("N3wPassword")
+    assert not account.checkPassword(TEST_PASSWORD)
 
 
 def test_rejects_wrong_current_password(make_account):
@@ -46,7 +46,7 @@ def test_failed_change_keeps_the_old_password(make_account):
     account = make_account()
     with pytest.raises(ValidationError):
         change(account, current="wrong-password")
-    assert account.check_password(TEST_PASSWORD)
+    assert account.checkPassword(TEST_PASSWORD)
 
 
 def test_unknown_account_raises_lookup_error(app):

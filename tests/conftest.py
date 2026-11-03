@@ -3,7 +3,7 @@ import itertools
 import pytest
 
 from app import create_app
-from app.entity import IDP, Category, UserAccount, UserProfile, db
+from app.entity import CategoryEntity, IDPEntity, UserAccountEntity, UserProfileEntity, db
 from app.entity.user_profile import DEFAULT_PROFILE_NAMES
 from tests.helpers import TEST_CONFIG, TEST_PASSWORD
 
@@ -26,7 +26,8 @@ def client(app):
 @pytest.fixture
 def default_profiles(app):
     return {
-        role: UserProfile.create(name, role) for role, name in DEFAULT_PROFILE_NAMES.items()
+        role: UserProfileEntity.createUserProfile(name, role)
+        for role, name in DEFAULT_PROFILE_NAMES.items()
     }
 
 
@@ -39,10 +40,12 @@ def make_account(default_profiles):
         values = {
             "username": f"user{n}",
             "email": f"user{n}@example.com",
-            "full_name": f"Test User {n}",
+            "name": f"Test User {n}",
         }
         values.update(fields)
-        return UserAccount.create(password=password, profile=default_profiles[role], **values)
+        return UserAccountEntity.createUserAccount(
+            password=password, profile=default_profiles[role], **values
+        )
 
     return _make
 
@@ -55,7 +58,7 @@ def make_category(app):
         n = next(counter)
         values = {"name": f"Category {n}", "description": "Test category"}
         values.update(fields)
-        category = Category(**values)
+        category = CategoryEntity(**values)
         db.session.add(category)
         db.session.commit()
         return category
@@ -69,12 +72,12 @@ def make_idp(make_account, make_category):
         values = {
             "title": "Modern HDB living room",
             "style": "Modern",
-            "property_type": "HDB",
-            "budget": 45000,
+            "propertyType": "HDB",
+            "budget": 45000.0,
             "location": "Tampines",
         }
         values.update(fields)
-        idp = IDP(
+        idp = IDPEntity(
             designer=designer or make_account(role="designer"),
             category=category or make_category(),
             **values,

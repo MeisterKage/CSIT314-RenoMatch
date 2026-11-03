@@ -1,38 +1,33 @@
 """Entity layer. Importing this package registers every table with SQLAlchemy."""
 
-from app.entity.audit_log import AuditLog
-from app.entity.category import Category
-from app.entity.company_info import CompanyInfo
+from app.entity.audit_log import AuditLogEntity
+from app.entity.category import CategoryEntity
+from app.entity.company_info import CompanyInfoEntity
 from app.entity.db import db
-from app.entity.enquiry import Enquiry, EnquiryMessage
-from app.entity.favourite import Favourite
-from app.entity.idp import IDP
-from app.entity.idp_flag import IDPFlag
-from app.entity.idp_photo import IDPPhoto
-from app.entity.login_attempt import LoginAttempt
-from app.entity.password_reset_token import PasswordResetToken
-from app.entity.review import Review
-from app.entity.shortlist_event import ShortlistEvent
-from app.entity.user_account import UserAccount
-from app.entity.user_profile import UserProfile
-from app.entity.view_event import ViewEvent
+from app.entity.enquiry import EnquiryEntity
+from app.entity.enquiry_message import EnquiryMessageEntity
+from app.entity.favourite import FavouriteEntity
+from app.entity.idp import IDPEntity
+from app.entity.idp_flag import IDPFlagEntity
+from app.entity.login_attempt import LoginAttemptEntity
+from app.entity.platform_activity import PlatformActivityEntity
+from app.entity.review import ReviewEntity
+from app.entity.user_account import UserAccountEntity
+from app.entity.user_profile import UserProfileEntity
 
 __all__ = [
-    "IDP",
-    "AuditLog",
-    "Category",
-    "CompanyInfo",
-    "Enquiry",
-    "EnquiryMessage",
-    "Favourite",
-    "IDPFlag",
-    "IDPPhoto",
-    "LoginAttempt",
-    "PasswordResetToken",
-    "Review",
-    "ShortlistEvent",
-    "UserAccount",
-    "UserProfile",
-    "ViewEvent",
+    "AuditLogEntity",
+    "CategoryEntity",
+    "CompanyInfoEntity",
+    "EnquiryEntity",
+    "EnquiryMessageEntity",
+    "FavouriteEntity",
+    "IDPEntity",
+    "IDPFlagEntity",
+    "LoginAttemptEntity",
+    "PlatformActivityEntity",
+    "ReviewEntity",
+    "UserAccountEntity",
+    "UserProfileEntity",
     "db",
 ]
