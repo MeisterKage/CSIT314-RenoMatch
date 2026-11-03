@@ -1,3 +1,5 @@
+from sqlalchemy import func, or_
+
 from app.entity.db import db
 
 ROLE_TYPES = ("admin", "designer", "customer", "platform")
@@ -34,6 +36,53 @@ class UserProfileEntity(db.Model):
         db.session.add(profile)
         db.session.commit()
         return profile
+
+    @property
+    def accountCount(self) -> int:
+        """US-27: how many accounts have this profile."""
+        return len(self.accounts)
+
+    @classmethod
+    def searchUserProfiles(cls, keyword: str, role: str, status: str) -> list["UserProfileEntity"]:
+        """US-31: profiles whose name or description contains keyword (ignoring case),
+        optionally limited to one role type and one status. An empty value means no
+        filter. Ordered by profileId."""
+        query = cls.query
+        keyword = (keyword or "").strip().lower()
+        if keyword:
+            query = query.filter(
+                or_(
+                    func.lower(cls.name).contains(keyword, autoescape=True),
+                    func.lower(cls.description).contains(keyword, autoescape=True),
+                )
+            )
+        if role:
+            query = query.filter(cls.roleType == role)
+        if status:
+            query = query.filter(cls.status == status)
+        return query.order_by(cls.profileId).all()
+
+    @classmethod
+    def nameTaken(cls, name: str, exceptProfileId: int | None = None) -> bool:
+        """True if another profile already uses this name (ignoring case)."""
+        query = cls.query.filter(func.lower(cls.name) == name.strip().lower())
+        if exceptProfileId is not None:
+            query = query.filter(cls.profileId != exceptProfileId)
+        return query.first() is not None
+
+    def updateUserProfile(self, name: str, description: str) -> None:
+        """US-28: the role type is fixed once the profile exists."""
+        self.name = name
+        self.description = description
+        db.session.commit()
+
+    def suspend(self) -> None:
+        self.status = "Suspended"
+        db.session.commit()
+
+    def reactivate(self) -> None:
+        self.status = "Active"
+        db.session.commit()
 
     @classmethod
     def findById(cls, profileId: int) -> "UserProfileEntity | None":

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ profile.name }} · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <p class="crumbs"><a href="{{ url_for('admin.profiles') }}">Back to user profiles</a></p>
+    <h1 class="page-title">{{ profile.name }}</h1>
+    <p><span class="badge{% if profile.status == 'Active' %} badge--ok{% else %} badge--warn{% endif %}">{{ profile.status }}</span></p>
+    <dl class="details">
+      <div><dt>Role</dt><dd>{{ profile.roleType|capitalize }}</dd></div>
+      <div><dt>Description</dt><dd>{{ profile.description or 'Not given' }}</dd></div>
+      <div><dt>Accounts</dt><dd>{{ profile.accountCount }}</dd></div>
+    </dl>
+    <div class="toolbar">
+      <a class="button" href="{{ url_for('admin.profile_edit', profileId=profile.profileId) }}">Edit profile</a>
+      {% if profile.status == 'Active' and profile.profileId != g.current_account.profileId %}
+      <form method="post" action="{{ url_for('admin.profile_suspend', profileId=profile.profileId) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next" value="{{ url_for('admin.profile_view', profileId=profile.profileId) }}">
+        <button class="button button--outline" type="submit">Suspend</button>
+      </form>
+      {% elif profile.status == 'Suspended' %}
+      <form method="post" action="{{ url_for('admin.profile_reactivate', profileId=profile.profileId) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next" value="{{ url_for('admin.profile_view', profileId=profile.profileId) }}">
+        <button class="button button--outline" type="submit">Reactivate</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

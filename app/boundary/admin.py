@@ -18,12 +18,19 @@ from app.boundary.role_tools import CHANGE_PASSWORD, Tool
 from app.control.create_user_account_controller import CreateUserAccountController
 from app.control.errors import ValidationError
 from app.control.export_user_accounts_controller import ExportUserAccountsController
+from app.control.create_user_profile_controller import CreateUserProfileController
 from app.control.reactivate_user_account_controller import ReactivateUserAccountController
+from app.control.reactivate_user_profile_controller import ReactivateUserProfileController
 from app.control.search_user_accounts_controller import SearchUserAccountsController
+from app.control.search_user_profiles_controller import SearchUserProfilesController
 from app.control.suspend_user_account_controller import SuspendUserAccountController
+from app.control.suspend_user_profile_controller import SuspendUserProfileController
 from app.control.unlock_user_account_controller import UnlockUserAccountController
 from app.control.update_user_account_controller import UpdateUserAccountController
+from app.control.update_user_profile_controller import UpdateUserProfileController
 from app.control.view_user_account_controller import ViewUserAccountController
+from app.control.view_user_profile_controller import ViewUserProfileController
+from app.entity.user_profile import ROLE_TYPES
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -34,7 +41,12 @@ TOOLS = [
         sprint=1,
         endpoint="admin.accounts",
     ),
-    Tool("User profiles", "Group accounts by role and suspend a whole role at once.", sprint=1),
+    Tool(
+        "User profiles",
+        "Group accounts by role and suspend a whole role at once.",
+        sprint=1,
+        endpoint="admin.profiles",
+    ),
     Tool(
         "Audit log",
         "See which admin changed which account, and when.",
@@ -63,10 +75,10 @@ class AdminHomePage(MethodView):
         return render_template("role_home.html", role_label="User Admin", tools=TOOLS)
 
 
-def safeNext(default: str) -> str:
-    """The page to return to after an action: a path under /admin/accounts, else `default`."""
+def safeNext(default: str, prefix: str = "/admin/accounts") -> str:
+    """The page to return to after an action: a path under `prefix`, else `default`."""
     target = request.form.get("next", "")
-    if target.startswith("/admin/accounts") and "//" not in target and "\\" not in target:
+    if target.startswith(prefix) and "//" not in target and "\\" not in target:
         return target
     return default
 
@@ -263,6 +275,126 @@ class UserAccountFormPage(MethodView):
         return redirect(url_for("admin.account_view", userId=userId))
 
 
+class ManageUserProfilesPage(MethodView):
+    """Boundary for US-27 (view), US-29 (suspend), US-30 (reactivate) and US-31 (search).
+    `displayMessage` takes no argument, so what it shows is held in `message`, `category`."""
+
+    decorators = [role_required("admin")]
+
+    def __init__(self):
+        self.searchController = SearchUserProfilesController()
+        self.viewController = ViewUserProfileController()
+        self.suspendController = SuspendUserProfileController()
+        self.reactivateController = ReactivateUserProfileController()
+        self.message = None
+        self.category = "success"
+
+    def get(self, profileId=None):
+        if profileId is None:
+            return self.displayProfiles()
+        return self.displayProfile(profileId)
+
+    def post(self, profileId):
+        if request.endpoint == "admin.profile_suspend":
+            action, done = self.suspendController.suspendUserProfile, "Profile suspended."
+        else:
+            action, done = self.reactivateController.reactivateUserProfile, "Profile reactivated."
+        try:
+            action(profileId, g.current_account.userId)
+        except ValidationError as error:
+            self.message, self.category = str(error), "danger"
+            return self.displayMessage()
+        self.message, self.category = done, "success"
+        return self.displayMessage()
+
+    def displayProfiles(self):
+        keyword = request.args.get("keyword", "").strip()
+        role = request.args.get("role", "").strip()
+        status = request.args.get("status", "").strip()
+        if role not in self.searchController.roleTypes:
+            role = ""
+        if status not in self.searchController.statuses:
+            status = ""
+        filters = {"keyword": keyword, "role": role, "status": status}
+        return render_template(
+            "admin/profiles.html",
+            profiles=self.searchController.searchUserProfiles(keyword, role, status),
+            filters=filters,
+            hasFilters=any(filters.values()),
+            roleTypes=self.searchController.roleTypes,
+            statuses=self.searchController.statuses,
+        )
+
+    def displayProfile(self, profileId):
+        profile = self.viewController.getUserProfile(profileId)
+        if profile is None:
+            abort(404)
+        return render_template("admin/profile_view.html", profile=profile)
+
+    def displayMessage(self):
+        flash(self.message, self.category)
+        return redirect(safeNext(url_for("admin.profiles"), "/admin/profiles"))
+
+
+class UserProfileFormPage(MethodView):
+    """Boundary for US-26 (create) and US-28 (update)."""
+
+    decorators = [role_required("admin")]
+
+    def __init__(self):
+        self.createController = CreateUserProfileController()
+        self.updateController = UpdateUserProfileController()
+        self.viewController = ViewUserProfileController()
+
+    def get(self, profileId=None):
+        if profileId is None:
+            return self.displayForm(None, {"roleType": ""}, {})
+        profile = self.viewController.getUserProfile(profileId)
+        if profile is None:
+            abort(404)
+        form = {"name": profile.name, "description": profile.description}
+        return self.displayForm(profile, form, {})
+
+    def post(self, profileId=None):
+        form = {
+            "name": request.form.get("name", ""),
+            "description": request.form.get("description", ""),
+            "roleType": request.form.get("roleType", ""),
+        }
+        adminId = g.current_account.userId
+        if profileId is None:
+            try:
+                profile = self.createController.createUserProfile(
+                    form["name"], form["description"], form["roleType"], adminId
+                )
+            except ValidationError as error:
+                return self.displayForm(None, form, error.errors)
+            return self.displayMessage("Profile created.", profile.profileId)
+        profile = self.viewController.getUserProfile(profileId)
+        if profile is None:
+            abort(404)
+        try:
+            self.updateController.updateUserProfile(
+                profileId, form["name"], form["description"], adminId
+            )
+        except ValidationError as error:
+            return self.displayForm(profile, form, error.errors)
+        return self.displayMessage("Profile updated.", profileId)
+
+    def displayForm(self, profile, form, errors):
+        return render_template(
+            "admin/profile_form.html",
+            profile=profile,
+            form=form,
+            errors=errors,
+            roleTypes=ROLE_TYPES,
+        )
+
+    def displayMessage(self, message, profileId):
+        flash(message, "success")
+        return redirect(url_for("admin.profile_view", profileId=profileId))
+
+
 bp.add_url_rule("/", view_func=AdminHomePage.as_view("home"))
 bp.add_url_rule("/accounts", view_func=ManageUserAccountsPage.as_view("accounts"))
 bp.add_url_rule("/accounts/export", view_func=ManageUserAccountsPage.as_view("accounts_export"))
@@ -279,5 +411,23 @@ for action in ("suspend", "reactivate", "unlock"):
     bp.add_url_rule(
         f"/accounts/<int:userId>/{action}",
         view_func=ManageUserAccountsPage.as_view(f"account_{action}"),
+        methods=["POST"],
+    )
+bp.add_url_rule("/profiles", view_func=ManageUserProfilesPage.as_view("profiles"))
+bp.add_url_rule(
+    "/profiles/new", view_func=UserProfileFormPage.as_view("profile_new"), methods=["GET", "POST"]
+)
+bp.add_url_rule(
+    "/profiles/<int:profileId>", view_func=ManageUserProfilesPage.as_view("profile_view")
+)
+bp.add_url_rule(
+    "/profiles/<int:profileId>/edit",
+    view_func=UserProfileFormPage.as_view("profile_edit"),
+    methods=["GET", "POST"],
+)
+for action in ("suspend", "reactivate"):
+    bp.add_url_rule(
+        f"/profiles/<int:profileId>/{action}",
+        view_func=ManageUserProfilesPage.as_view(f"profile_{action}"),
         methods=["POST"],
     )

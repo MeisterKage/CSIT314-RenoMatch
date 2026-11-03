@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_field.html" import field with context %}
+{% set editing = profile is not none %}
+{% block title %}{{ 'Update profile' if editing else 'Create profile' }} · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <p class="crumbs"><a href="{{ url_for('admin.profiles') }}">Back to user profiles</a></p>
+    <div class="auth__form">
+      <h1 class="page-title">{{ 'Update profile' if editing else 'Create profile' }}</h1>
+      <form method="post" class="stack" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {{ field("name", "Profile name") }}
+        {{ field("description", "Description (optional)") }}
+        {% if editing %}
+        <p class="muted">Role: {{ profile.roleType|capitalize }}. The role cannot be changed.</p>
+        {% else %}
+        <div class="field{% if errors.get('roleType') %} has-error{% endif %}">
+          <label for="roleType">Role</label>
+          <select id="roleType" name="roleType"{% if errors.get('roleType') %} aria-invalid="true" aria-describedby="roleType-error"{% endif %}>
+            <option value="">Choose a role</option>
+            {% for role in roleTypes %}<option value="{{ role }}"{% if form.get('roleType') == role %} selected{% endif %}>{{ role|capitalize }}</option>{% endfor %}
+          </select>
+          {% if errors.get('roleType') %}<p class="field-error" id="roleType-error">{{ errors['roleType'] }}</p>{% endif %}
+        </div>
+        {% endif %}
+        <button class="button button--full" type="submit">{{ 'Save changes' if editing else 'Create profile' }}</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

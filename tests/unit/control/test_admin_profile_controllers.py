@@ -166,7 +166,7 @@ def test_reactivate_refusals(admin):
 
 def test_search_profiles_by_keyword_role_and_status(admin):
     support = create(admin, name="Support Staff", description="Helps users")
-    create(admin, name="Contractor", roleType="designer")
+    create(admin, name="Contractor", description="Builds", roleType="designer")
     SuspendUserProfileController().suspendUserProfile(support.profileId, admin.userId)
     search = SearchUserProfilesController().searchUserProfiles
     assert [p.name for p in search("support", "", "")] == ["Support Staff"]
