@@ -1,0 +1,25 @@
+name: Weekly summary
+
+on:
+  schedule:
+    # Every Monday at 01:00 UTC, which is 09:00 in Singapore.
+    - cron: "0 1 * * 1"
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call the weekly summary endpoint
+        env:
+          RENDER_APP_URL: ${{ secrets.RENDER_APP_URL }}
+          WEEKLY_SUMMARY_TOKEN: ${{ secrets.WEEKLY_SUMMARY_TOKEN }}
+        run: |
+          if [ -z "$RENDER_APP_URL" ] || [ -z "$WEEKLY_SUMMARY_TOKEN" ]; then
+            echo "::notice::RENDER_APP_URL or WEEKLY_SUMMARY_TOKEN is not set, so the weekly summary was skipped."
+            exit 0
+          fi
+          curl --fail --show-error --silent --max-time 120 \
+            -X POST \
+            -H "X-Summary-Token: $WEEKLY_SUMMARY_TOKEN" \
+            "${RENDER_APP_URL%/}/internal/weekly-summary"

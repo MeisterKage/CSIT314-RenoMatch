@@ -1376,3 +1376,51 @@ fieldset {
   object-fit: cover;
   border-radius: var(--radius-small);
 }
+
+.bars {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0 0 2rem;
+  padding: 0;
+  list-style: none;
+}
+
+.bars__label {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 1rem;
+  font-weight: 600;
+}
+
+.bars__figures {
+  color: var(--stone);
+  font-weight: 400;
+  font-size: 0.9375rem;
+}
+
+.bars__track {
+  height: 0.6rem;
+  margin-top: 0.3rem;
+  border-radius: var(--pill);
+  background: var(--mist);
+  overflow: hidden;
+}
+
+.bars__fill {
+  display: block;
+  height: 100%;
+  min-width: 0.2rem;
+  border-radius: var(--pill);
+  background: var(--sage);
+}
+
+.bars__fill--shortlist {
+  background: var(--charcoal);
+}
+
+.interest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 2rem 3rem;
+}

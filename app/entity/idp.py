@@ -1,12 +1,16 @@
-from sqlalchemy import or_, select, update
+from datetime import timedelta
+
+from sqlalchemy import func, or_, select, update
 
 from app.entity.db import db, utcnow
 from app.entity.idp_photos import deletePhoto, savePhoto
 from app.entity.platform_activity import PlatformActivityEntity
+from app.entity.reports import Summary
 
 PAGE_SIZE = 24
 RECOMMENDATION_LIMIT = 10
 FEATURED_LIMIT = 6
+WEEKLY_SUMMARY_DAYS = 7
 
 IDP_STATUSES = ("Active", "Suspended", "Removed")
 IDP_STAGES = ("Current", "Past")
@@ -325,3 +329,109 @@ class IDPEntity(db.Model):
         record.featuredDate = None
         db.session.commit()
         return True
+
+    @classmethod
+    def getViewCount(cls, idpId: int) -> int:
+        """US-43 step 1.1.1: the IDP's viewCount, 0 when it has none or does not exist."""
+        record = db.session.get(cls, idpId)
+        return record.viewCount if record is not None else 0
+
+    @classmethod
+    def getShortlistCount(cls, idpId: int) -> int:
+        """US-44: the IDP's shortlistCount, 0 when it has none or does not exist."""
+        record = db.session.get(cls, idpId)
+        return record.shortlistCount if record is not None else 0
+
+    @classmethod
+    def getInterestDashboard(cls, designerId: int) -> dict:
+        """US-46: views and shortlists across the designer's IDPs, Removed ones left out.
+
+        byStyle and byCategory are lists of (name, views, shortlists), most views first.
+        topIDPs is the 5 IDPs with the most views. maxValue is the largest views or shortlists
+        figure shown, which the page uses to size its bars.
+        """
+        idps = (
+            db.session.query(cls)
+            .filter(cls.designerId == designerId, cls.status != "Removed")
+            .order_by(cls.viewCount.desc(), cls.idpId)
+            .all()
+        )
+        byStyle: dict[str, list[int]] = {}
+        byCategory: dict[str, list[int]] = {}
+        for idp in idps:
+            for totals, name in ((byStyle, idp.style), (byCategory, idp.category.name)):
+                pair = totals.setdefault(name, [0, 0])
+                pair[0] += idp.viewCount
+                pair[1] += idp.shortlistCount
+
+        def ranked(totals):
+            rows = [(name, views, shortlists) for name, (views, shortlists) in totals.items()]
+            return sorted(rows, key=lambda row: (-row[1], -row[2], row[0]))
+
+        figures = [max(idp.viewCount, idp.shortlistCount) for idp in idps]
+        for totals in (byStyle, byCategory):
+            figures += [max(pair) for pair in totals.values()]
+        return {
+            "byStyle": ranked(byStyle),
+            "byCategory": ranked(byCategory),
+            "topIDPs": idps[:5],
+            "maxValue": max(figures, default=0),
+        }
+
+    @classmethod
+    def getOptedInDesigners(cls) -> "list":
+        """US-48 step 1.1.1: the Active designers who have the weekly summary turned on.
+
+        A designer is an account whose profile has the designer role. Suspended accounts and
+        accounts on a suspended profile are left out. Ordered by userId.
+        """
+        from app.entity.user_account import UserAccountEntity
+        from app.entity.user_profile import UserProfileEntity
+
+        return (
+            db.session.query(UserAccountEntity)
+            .join(UserProfileEntity, UserAccountEntity.profileId == UserProfileEntity.profileId)
+            .filter(
+                UserProfileEntity.roleType == "designer",
+                UserProfileEntity.status == "Active",
+                UserAccountEntity.status == "Active",
+                UserAccountEntity.weeklySummaryOptIn.is_(True),
+            )
+            .order_by(UserAccountEntity.userId)
+            .all()
+        )
+
+    @classmethod
+    def getWeeklyStats(cls, designerId: int) -> Summary:
+        """US-48 step 1.1.2: the designer's views and shortlists of the last 7 days.
+
+        Counts `view` and `shortlist` PlatformActivityEntity rows for the designer's IDPs.
+        topIDPs holds up to 3 (title, views) pairs, the most viewed first. IDPs without a
+        view that week are not listed.
+        """
+        from app.entity.user_account import UserAccountEntity
+
+        now = utcnow()
+        since = now - timedelta(days=WEEKLY_SUMMARY_DAYS)
+        rows = (
+            db.session.query(cls.title, PlatformActivityEntity.activityType, func.count())
+            .join(PlatformActivityEntity, PlatformActivityEntity.idpId == cls.idpId)
+            .filter(
+                cls.designerId == designerId,
+                PlatformActivityEntity.timestamp >= since,
+                PlatformActivityEntity.activityType.in_(("view", "shortlist")),
+            )
+            .group_by(cls.idpId, cls.title, PlatformActivityEntity.activityType)
+            .all()
+        )
+        views = [(title, count) for title, kind, count in rows if kind == "view"]
+        designer = db.session.get(UserAccountEntity, designerId)
+        return Summary(
+            designerId=designerId,
+            startDate=since.date(),
+            endDate=now.date(),
+            designerName=designer.name if designer is not None else "",
+            totalViews=sum(count for _, count in views),
+            totalShortlists=sum(count for _, kind, count in rows if kind == "shortlist"),
+            topIDPs=sorted(views, key=lambda pair: (-pair[1], pair[0]))[:3],
+        )

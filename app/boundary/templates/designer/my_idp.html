@@ -26,6 +26,8 @@
           <dt>Category</dt><dd>{{ idp.category.name }}</dd>
           <dt>Stage</dt><dd>{{ idp.stage }}</dd>
           <dt>Status</dt><dd>{{ idp.status }}</dd>
+          <dt>Views</dt><dd>{{ viewsText }}</dd>
+          <dt>Shortlists</dt><dd>{{ shortlistsText }}</dd>
         </dl>
         <a class="button button--full" href="{{ url_for('portfolio.edit_idp', idpId=idp.idpId) }}">Edit project</a>
         <form class="favourite-remove" method="post" action="{{ url_for('portfolio.delete_idp', idpId=idp.idpId) }}">
