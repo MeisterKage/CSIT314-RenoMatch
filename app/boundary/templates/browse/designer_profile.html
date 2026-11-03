@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% from "browse/_idp_card.html" import idp_card %}
+{% set designer = profile.designer %}
+{% set company = profile.company %}
+{% block title %}{{ company.name if company else designer.name }} · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <p class="crumbs"><a href="{{ url_for('browse.idps') }}">&larr; All designs</a></p>
+    <h1 class="page-title">{{ company.name if company else designer.name }}</h1>
+    {% if company %}<p class="muted">Designer: {{ designer.name }}</p>{% endif %}
+
+    <div class="rating-line">
+      {% if profile.reviews %}
+        <span class="rating-line__score">&#9733; {{ '%.1f'|format(profile.averageRating) }}</span>
+        <span class="muted">{{ profile.reviews|length }} review{{ '' if profile.reviews|length == 1 else 's' }}</span>
+      {% else %}
+        <span class="muted">No reviews yet</span>
+      {% endif %}
+    </div>
+
+    {% if company %}
+    <div class="detail-grid">
+      <div>
+        <h2 class="h-small">About the studio</h2>
+        <p>{{ company.description or 'This studio has not added a description yet.' }}</p>
+      </div>
+      <aside class="detail-card">
+        <dl class="facts">
+          {% if company.address %}<dt>Address</dt><dd>{{ company.address }}</dd>{% endif %}
+          {% if company.phone %}<dt>Phone</dt><dd>{{ company.phone }}</dd>{% endif %}
+          {% if company.email %}<dt>Email</dt><dd>{{ company.email }}</dd>{% endif %}
+          {% if company.website %}<dt>Website</dt><dd>{{ company.website }}</dd>{% endif %}
+        </dl>
+      </aside>
+    </div>
+    {% endif %}
+
+    <h2 class="h-section">Portfolio</h2>
+    {% if profile.idps %}
+    <ul class="style-grid">
+      {% for idp in profile.idps %}{{ idp_card(idp) }}{% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty">No projects to show yet.</p>
+    {% endif %}
+
+    <h2 class="h-section" id="reviews">Reviews</h2>
+    {# US-19: the "Write a Review" form and message area go here (displayReviewForm, displayMessage). #}
+    {% if profile.reviews %}
+    <ul class="reviews">
+      {% for review in profile.reviews %}
+      <li class="review">
+        <p class="review__head"><strong>{{ review.user.name }}</strong>
+          <span class="review__stars" aria-label="{{ review.rating }} out of 5">{{ '&#9733;'|safe * review.rating }}</span>
+          <span class="muted">{{ review.createdAt.strftime('%d %b %Y') }}</span></p>
+        {% if review.comment %}<p>{{ review.comment }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty">No reviews yet.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

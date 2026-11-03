@@ -22,3 +22,7 @@ class CompanyInfoEntity(db.Model):
     )
 
     designer = db.relationship("UserAccountEntity")
+
+    @classmethod
+    def findByDesignerId(cls, designerId: int) -> "CompanyInfoEntity | None":
+        return db.session.query(cls).filter_by(designerId=designerId).first()

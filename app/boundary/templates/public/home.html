@@ -34,9 +34,11 @@
     <ul class="style-grid">
       {% for slug, name, blurb in styles %}
       <li class="style-card">
-        <img src="{{ url_for('static', filename='img/style-' ~ slug ~ '.jpg') }}" alt="{{ name }} interior" loading="lazy" width="900" height="675">
-        <h3>{{ name }}</h3>
-        <p>{{ blurb }}</p>
+        <a class="style-card__link" href="{{ url_for('browse.idps', style=name) }}">
+          <img src="{{ url_for('static', filename='img/style-' ~ slug ~ '.jpg') }}" alt="{{ name }} interior" loading="lazy" width="900" height="675">
+          <h3>{{ name }}</h3>
+          <p>{{ blurb }}</p>
+        </a>
       </li>
       {% endfor %}
     </ul>
