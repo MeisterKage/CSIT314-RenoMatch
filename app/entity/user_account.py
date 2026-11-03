@@ -1,6 +1,5 @@
 import hashlib
 import secrets
-import threading
 from datetime import timedelta
 
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -10,10 +9,6 @@ from app.entity.db import db, utcnow
 ACCOUNT_STATUSES = ("Active", "Suspended")
 RESET_TOKEN_LIFETIME = timedelta(hours=1)
 DELETED_NAME = "Deleted user"
-
-# The raw reset token exists only until the link is emailed (the database keeps its hash).
-# It is handed to the controller's private sendResetLink through takeIssuedResetToken.
-_issued = threading.local()
 
 
 def hashToken(token: str) -> str:
@@ -90,25 +85,18 @@ class UserAccountEntity(db.Model):
         db.session.commit()
 
     @classmethod
-    def requestPasswordReset(cls, email: str) -> bool:
-        """US-05 1.1.1: for an active account with this email, store a hashed single-use
-        token that expires in 1 hour and return True (emailFound). Otherwise False."""
+    def requestPasswordReset(cls, email: str) -> str | None:
+        """Returns the raw reset token if the email is registered (truthy = emailFound in the
+        US-05 sequence diagram), else None. The database keeps only the token's hash, which
+        expires in 1 hour."""
         account = cls.findByEmail(email.strip())
         if account is None or not account.canLogIn():
-            return False
+            return None
         token = secrets.token_urlsafe(32)
         account.resetToken = hashToken(token)
         account.tokenExpiry = utcnow() + RESET_TOKEN_LIFETIME
         db.session.commit()
-        if not hasattr(_issued, "tokens"):
-            _issued.tokens = {}
-        _issued.tokens[account.email] = token
-        return True
-
-    @classmethod
-    def takeIssuedResetToken(cls, email: str) -> str | None:
-        """The raw token just issued for this email, once. Used by sendResetLink."""
-        return getattr(_issued, "tokens", {}).pop(email.strip().lower(), None)
+        return token
 
     @classmethod
     def resetPassword(cls, token: str, newPassword: str) -> bool:
@@ -143,6 +131,12 @@ class UserAccountEntity(db.Model):
         self.resetToken = None
         self.tokenExpiry = None
         self.isAnonymised = True
+        if self.role == "designer":
+            from app.entity.idp import IDPEntity
+
+            for idp in IDPEntity.query.filter_by(designerId=self.userId):
+                idp.status = "Removed"
+                idp.isFeatured = False
         db.session.commit()
 
     def canLogIn(self) -> bool:

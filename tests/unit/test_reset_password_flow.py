@@ -10,7 +10,7 @@ class Recorder:
 
     def requestPasswordReset(self, email):
         self.calls.append(("entity.requestPasswordReset", email))
-        return self.entityResult
+        return "raw-token" if self.entityResult else None
 
     def resetPassword(self, token, newPassword):
         self.calls.append(("entity.resetPassword", token, newPassword))
@@ -50,3 +50,18 @@ def test_invalid_password_returns_false_without_touching_the_entity(monkeypatch)
     rec = Recorder(True)
     assert controller_with(rec, monkeypatch).resetPassword("tok", "bad") is False
     assert rec.calls == []
+
+
+def test_sendResetLink_clears_the_token_and_warns_when_the_email_fails(app, caplog):
+    class FailingEmail:
+        def sendEmail(self, email, subject, body):
+            return False
+
+    controller = ResetPasswordController()
+    controller.emailService = FailingEmail()
+    controller.issuedToken = "raw-token"
+    with app.test_request_context():
+        controller.sendResetLink("a@b.co")
+    assert controller.issuedToken is None
+    assert "could not be sent" in caplog.text
+    assert "raw-token" not in caplog.text

@@ -135,3 +135,16 @@ def test_deleted_users_reviews_stay_and_show_deleted_user(client, make_account, 
     page = client.get(f"/designers/{designer.userId}")
     assert b"Deleted user" in page.data
     assert ReviewEntity.query.count() == 1
+
+
+def test_deleting_a_designer_removes_their_idps_from_public_pages(
+    client, make_account, make_idp, login
+):
+    designer = make_account(role="designer")
+    idp = make_idp(designer=designer, isFeatured=True)
+    login(designer.username)
+    delete(client, designer)
+    db.session.refresh(idp)
+    assert idp.status == "Removed"
+    assert idp.isFeatured is False
+    assert client.get(f"/idps/{idp.idpId}").status_code == 404
