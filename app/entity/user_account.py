@@ -1,8 +1,23 @@
+import hashlib
+import secrets
+import threading
+from datetime import timedelta
+
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.entity.db import db, utcnow
 
 ACCOUNT_STATUSES = ("Active", "Suspended")
+RESET_TOKEN_LIFETIME = timedelta(hours=1)
+DELETED_NAME = "Deleted user"
+
+# The raw reset token exists only until the link is emailed (the database keeps its hash).
+# It is handed to the controller's private sendResetLink through takeIssuedResetToken.
+_issued = threading.local()
+
+
+def hashToken(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
 
 
 class UserAccountEntity(db.Model):
@@ -72,6 +87,62 @@ class UserAccountEntity(db.Model):
 
     def changePassword(self, newPassword: str) -> None:
         self.setPassword(newPassword)
+        db.session.commit()
+
+    @classmethod
+    def requestPasswordReset(cls, email: str) -> bool:
+        """US-05 1.1.1: for an active account with this email, store a hashed single-use
+        token that expires in 1 hour and return True (emailFound). Otherwise False."""
+        account = cls.findByEmail(email.strip())
+        if account is None or not account.canLogIn():
+            return False
+        token = secrets.token_urlsafe(32)
+        account.resetToken = hashToken(token)
+        account.tokenExpiry = utcnow() + RESET_TOKEN_LIFETIME
+        db.session.commit()
+        if not hasattr(_issued, "tokens"):
+            _issued.tokens = {}
+        _issued.tokens[account.email] = token
+        return True
+
+    @classmethod
+    def takeIssuedResetToken(cls, email: str) -> str | None:
+        """The raw token just issued for this email, once. Used by sendResetLink."""
+        return getattr(_issued, "tokens", {}).pop(email.strip().lower(), None)
+
+    @classmethod
+    def resetPassword(cls, token: str, newPassword: str) -> bool:
+        """US-05 2.1.2: set the new password if the token matches and has not expired, then
+        discard the token so it cannot be used again."""
+        account = cls.query.filter_by(resetToken=hashToken(token)).first()
+        if account is None or account.tokenExpiry is None or account.tokenExpiry < utcnow():
+            return False
+        account.setPassword(newPassword)
+        account.resetToken = None
+        account.tokenExpiry = None
+        db.session.commit()
+        return True
+
+    def updateDetails(self, name: str, email: str, phone: str) -> None:
+        self.name = name
+        self.email = email.lower()
+        self.phone = phone
+        db.session.commit()
+
+    def setWeeklySummaryOptIn(self, optIn: bool) -> None:
+        self.weeklySummaryOptIn = optIn
+        db.session.commit()
+
+    def anonymise(self) -> None:
+        """US-08: replace the personal details. The row stays so reviews and enquiries keep
+        their links and show "Deleted user"."""
+        self.name = DELETED_NAME
+        self.username = f"deleted{self.userId}"
+        self.email = f"deleted{self.userId}@deleted.invalid"
+        self.phone = ""
+        self.resetToken = None
+        self.tokenExpiry = None
+        self.isAnonymised = True
         db.session.commit()
 
     def canLogIn(self) -> bool:
