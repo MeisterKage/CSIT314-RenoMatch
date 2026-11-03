@@ -46,7 +46,26 @@
     {% endif %}
 
     <h2 class="h-section" id="reviews">Reviews</h2>
-    {# US-19: the "Write a Review" form and message area go here (displayReviewForm, displayMessage). #}
+    {% if reviewForm %}
+    <form class="review-form" method="post" action="{{ url_for('browse.review_designer', designerId=designer.userId) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <h3 class="h-small">{{ 'Edit your review' if editing else 'Write a Review' }}</h3>
+      <fieldset class="rating-choice">
+        <legend>Your rating</legend>
+        {% for n in range(1, 6) %}
+        <label><input type="radio" name="rating" value="{{ n }}"{% if form.rating == n %} checked{% endif %}> {{ n }} <span aria-hidden="true">&#9733;</span></label>
+        {% endfor %}
+      </fieldset>
+      <div class="field">
+        <label for="comment">Comment (up to 1,000 characters)</label>
+        <textarea id="comment" name="comment" rows="5">{{ form.comment }}</textarea>
+      </div>
+      <button class="button" type="submit">Submit</button>
+      <a class="button button--outline" href="{{ url_for('browse.designer_profile', designerId=designer.userId) }}#reviews">Cancel</a>
+    </form>
+    {% elif g.current_account and g.current_account.role == 'customer' %}
+    <p><a class="button button--outline" href="{{ url_for('browse.review_designer', designerId=designer.userId) }}">Write a Review</a></p>
+    {% endif %}
     {% if profile.reviews %}
     <ul class="reviews">
       {% for review in profile.reviews %}

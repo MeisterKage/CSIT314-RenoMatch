@@ -67,5 +67,5 @@ def test_add_message_appends_in_order(make_account, make_idp):
     ]
 
 
-def test_get_enquiry_unknown_is_none():
+def test_get_enquiry_unknown_is_none(app):
     assert EnquiryEntity.getEnquiry(9999) is None

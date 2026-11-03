@@ -3,8 +3,11 @@ from flask.views import MethodView
 
 from app.boundary.auth_guard import role_required
 from app.control.browse_idps_controller import BrowseIDPsController
+from app.control.errors import ValidationError
+from app.control.rate_review_designer_controller import RateReviewDesignerController
 from app.control.save_favourite_controller import SaveFavouriteController
 from app.control.search_idps_controller import SearchIDPsController
+from app.control.send_enquiry_controller import SendEnquiryController
 from app.control.view_designer_profile_controller import ViewDesignerProfileController
 from app.control.view_favourites_controller import ViewFavouritesController
 from app.control.view_idp_details_controller import ViewIDPDetailsController
@@ -94,14 +97,15 @@ class BrowseIDPsPage(MethodView):
 class IDPDetailsPage(MethodView):
     """Boundary for US-10 (one IDP with its photos, details and designer link) and US-14.
 
-    US-14 adds the save-favourite form for customers and handles its POST. US-18 (send
-    enquiry) adds its form to this page.
+    US-14 adds the save-favourite form for customers and handles its POST. US-18 adds the
+    send-enquiry form and handles its POST.
     """
 
     def __init__(self):
         self.controller = ViewIDPDetailsController()
         self.saveController = SaveFavouriteController()
         self.favouritesController = ViewFavouritesController()
+        self.enquiryController = SendEnquiryController()
 
     def get(self, idpId):
         viewerId = g.current_account.userId if g.current_account else None
@@ -112,6 +116,8 @@ class IDPDetailsPage(MethodView):
 
     @role_required("customer")
     def post(self, idpId):
+        if request.endpoint == "browse.send_enquiry":
+            return self.sendEnquiry(idpId)
         note = request.form.get("note", "").strip()
         goBack = url_for("browse.idp_details", idpId=idpId)
         if request.form.get("next") == "favourites":
@@ -123,6 +129,24 @@ class IDPDetailsPage(MethodView):
         if favourite is None:
             abort(404)
         return self.displayMessage(goBack)
+
+    def sendEnquiry(self, idpId):
+        """US-18: send the enquiry, then show the new thread."""
+        try:
+            enquiry = self.enquiryController.sendEnquiry(
+                g.current_account.userId,
+                idpId,
+                request.form.get("subject", ""),
+                request.form.get("message", ""),
+            )
+        except ValidationError as error:
+            for problem in error.errors.values():
+                flash(problem, "danger")
+            return redirect(url_for("browse.idp_details", idpId=idpId))
+        if enquiry is None:
+            abort(404)
+        flash("Your enquiry has been sent.", "success")
+        return redirect(url_for("enquiries.customer_enquiry", enquiryId=enquiry.enquiryId))
 
     def displayMessage(self, goBack):
         flash("Saved to your favourites.", "success")
@@ -136,24 +160,107 @@ class IDPDetailsPage(MethodView):
 
 
 class DesignerProfilePage(MethodView):
-    """Boundary for US-11: a designer's company, portfolio, rating and reviews.
+    """Boundary for US-11 (a designer's company, portfolio, rating and reviews) and US-19.
 
-    US-19 adds RateReviewDesignerController and its displayReviewForm(), displayReview()
-    and displayMessage() to this page. It will set `controller` to that controller, so
-    the profile controller lives in `profileController`.
+    US-19 follows its sequence diagram: `get` on the review route is "click Write a Review"
+    (1.1 checkEligibility, then 1.2, 1.3 or 1.4) and `post` is "Submit" (2.1 submitReview,
+    then 2.2 or 2.3). The profile controller lives in `profileController` so that
+    `controller` is the RateReviewDesignerController, as in the class diagram.
+
+    The display methods take no arguments, as in the class diagram. What the sequence
+    diagram passes to them is held on the page instead: `existingReview` for 1.4 and
+    `message` for 1.3 and 2.3.
     """
 
-    def __init__(self):
+    def __init__(self, writeReview=False):
         self.profileController = ViewDesignerProfileController()
+        self.controller = RateReviewDesignerController()
+        self.writeReview = writeReview
+        self.profile = None
+        self.existingReview = None
+        self.message = None
+        self.form = {"rating": None, "comment": ""}
+        self.showForm = False
+
+    def dispatch_request(self, **kwargs):
+        if self.writeReview:
+            guarded = role_required("customer")(super().dispatch_request)
+            return guarded(**kwargs)
+        return super().dispatch_request(**kwargs)
 
     def get(self, designerId):
-        profile = self.profileController.viewDesignerProfile(designerId)
-        if profile is None:
+        self.profile = self.profileController.viewDesignerProfile(designerId)
+        if self.profile is None:
             abort(404)
-        return self.displayProfile(profile)
+        if not self.writeReview:
+            return self.displayProfile(self.profile)
+        userId = g.current_account.userId
+        status = self.controller.checkEligibility(designerId, userId)
+        if status == "eligible":
+            return self.displayReviewForm()
+        if status == "not_contacted":
+            self.message = "You can only review designers you have contacted"
+            return self.displayMessage()
+        self.existingReview = next(
+            (review for review in self.profile.reviews if review.userId == userId), None
+        )
+        return self.displayReviewForm()
+
+    def post(self, designerId):
+        self.profile = self.profileController.viewDesignerProfile(designerId)
+        if self.profile is None:
+            abort(404)
+        try:
+            rating = int(request.form.get("rating", ""))
+        except ValueError:
+            rating = None
+        comment = request.form.get("comment", "")
+        self.form = {"rating": rating, "comment": comment}
+        if self.controller.submitReview(designerId, g.current_account.userId, rating, comment):
+            return self.displayReview()
+        self.message = (
+            "Your review was not saved. Select a rating and keep your comment "
+            "within 1,000 characters"
+        )
+        self.showForm = True
+        return self.displayMessage()
 
     def displayProfile(self, profile):
         return render_template("browse/designer_profile.html", profile=profile)
+
+    def displayReviewForm(self):
+        """1.2 and 1.4: the form, filled with `existingReview` when the user has one."""
+        if self.existingReview is not None:
+            self.form = {
+                "rating": self.existingReview.rating,
+                "comment": self.existingReview.comment,
+            }
+        return render_template(
+            "browse/designer_profile.html",
+            profile=self.profile,
+            reviewForm=True,
+            form=self.form,
+            editing=self.existingReview is not None,
+        )
+
+    def displayReview(self):
+        """2.2: the saved review, in the profile's review list with the new average."""
+        flash("Your review has been saved.", "success")
+        return redirect(
+            url_for("browse.designer_profile", designerId=self.profile.designer.userId)
+            + "#reviews"
+        )
+
+    def displayMessage(self):
+        """1.3 and 2.3: `message` above the profile, with the form kept open after 2.3."""
+        flash(self.message, "danger")
+        return render_template(
+            "browse/designer_profile.html",
+            profile=self.profile,
+            reviewForm=self.showForm,
+            form=self.form,
+            editing=False,
+        )
 
 
 bp.add_url_rule("/idps", view_func=BrowseIDPsPage.as_view("idps"))
@@ -164,5 +271,17 @@ bp.add_url_rule(
     methods=["POST"],
 )
 bp.add_url_rule(
-    "/designers/<int:designerId>", view_func=DesignerProfilePage.as_view("designer_profile")
+    "/designers/<int:designerId>",
+    view_func=DesignerProfilePage.as_view("designer_profile"),
+    methods=["GET"],
+)
+bp.add_url_rule(
+    "/idps/<int:idpId>/enquiry",
+    view_func=IDPDetailsPage.as_view("send_enquiry"),
+    methods=["POST"],
+)
+bp.add_url_rule(
+    "/designers/<int:designerId>/review",
+    view_func=DesignerProfilePage.as_view("review_designer", writeReview=True),
+    methods=["GET", "POST"],
 )

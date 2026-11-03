@@ -11,7 +11,11 @@ TOOLS = [
     Tool("Favourites", "Save projects you like, with a note, and compare them later.", sprint=3),
     Tool("Your details", "Keep your name, email and phone number up to date.", sprint=4),
     Tool("Recommended for you", "Projects picked from what you have viewed and saved.", sprint=5),
-    Tool("Enquiries", "Ask a designer about price and availability.", sprint=5),
+    Tool(
+        "Enquiries",
+        "Ask a designer about price and availability.",
+        endpoint="enquiries.customer_enquiries",
+    ),
     Tool("Compare designs", "Put up to three projects side by side.", sprint=5),
     CHANGE_PASSWORD,
 ]

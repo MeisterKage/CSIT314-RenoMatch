@@ -24,10 +24,18 @@ def test_send_enquiry_creates_thread(thread):
 
 @pytest.mark.parametrize(
     "subject,message,field",
-    [("", "body", "subject"), ("   ", "body", "subject"), ("s" * 151, "body", "subject"),
-     ("s", "", "message"), ("s", "  ", "message"), ("s", "m" * 2001, "message")],
+    [
+        ("", "body", "subject"),
+        ("   ", "body", "subject"),
+        ("s" * 151, "body", "subject"),
+        ("s", "", "message"),
+        ("s", "  ", "message"),
+        ("s", "m" * 2001, "message"),
+    ],
 )
-def test_send_enquiry_validates_subject_and_message(make_account, make_idp, subject, message, field):
+def test_send_enquiry_validates_subject_and_message(
+    make_account, make_idp, subject, message, field
+):
     customer, idp = make_account(), make_idp()
     with pytest.raises(ValidationError) as caught:
         SendEnquiryController().sendEnquiry(customer.userId, idp.idpId, subject, message)

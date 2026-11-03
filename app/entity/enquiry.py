@@ -1,4 +1,10 @@
 from app.entity.db import db, utcnow
+from app.entity.enquiry_message import EnquiryMessageEntity
+from app.entity.idp import IDPEntity
+from app.entity.platform_activity import PlatformActivityEntity
+
+SUBJECT_MAX_LENGTH = 150
+MESSAGE_MAX_LENGTH = 2000
 
 
 class EnquiryEntity(db.Model):
@@ -26,3 +32,62 @@ class EnquiryEntity(db.Model):
         order_by="EnquiryMessageEntity.sentAt",
         cascade="all, delete-orphan",
     )
+
+    @classmethod
+    def createEnquiry(
+        cls, userId: int, idpId: int, subject: str, message: str
+    ) -> "EnquiryEntity | None":
+        """US-18: start a thread with the IDP's designer, with the customer's first message.
+
+        Adds an `enquiry` PlatformActivityEntity in the same commit. Returns None when the
+        IDP does not exist or is not Active.
+        """
+        idp = db.session.get(IDPEntity, idpId)
+        if idp is None or idp.status != "Active":
+            return None
+        enquiry = cls(userId=userId, designerId=idp.designerId, idpId=idpId, subject=subject)
+        enquiry.messages.append(EnquiryMessageEntity(senderId=userId, body=message))
+        db.session.add(enquiry)
+        db.session.add(PlatformActivityEntity(activityType="enquiry", userId=userId, idpId=idpId))
+        db.session.commit()
+        return enquiry
+
+    @classmethod
+    def getEnquiry(cls, enquiryId: int) -> "EnquiryEntity | None":
+        return db.session.get(cls, enquiryId)
+
+    @classmethod
+    def getCustomerEnquiries(cls, userId: int) -> "list[EnquiryEntity]":
+        """The customer's threads, the most recently active first."""
+        return cls._byActivity(cls.query.filter_by(userId=userId).all())
+
+    @classmethod
+    def getDesignerEnquiries(cls, designerId: int) -> "list[EnquiryEntity]":
+        """US-47: the threads addressed to the designer, the most recently active first."""
+        return cls._byActivity(cls.query.filter_by(designerId=designerId).all())
+
+    @classmethod
+    def addMessage(
+        cls, enquiryId: int, senderId: int, body: str
+    ) -> "EnquiryMessageEntity | None":
+        """US-47: add a message to a thread. None when the thread does not exist."""
+        enquiry = cls.getEnquiry(enquiryId)
+        if enquiry is None:
+            return None
+        message = EnquiryMessageEntity(enquiryId=enquiryId, senderId=senderId, body=body)
+        db.session.add(message)
+        db.session.commit()
+        db.session.refresh(enquiry)
+        return message
+
+    @property
+    def lastMessage(self) -> "EnquiryMessageEntity | None":
+        return self.messages[-1] if self.messages else None
+
+    @classmethod
+    def _byActivity(cls, enquiries: "list[EnquiryEntity]") -> "list[EnquiryEntity]":
+        return sorted(
+            enquiries,
+            key=lambda e: (e.lastMessage.sentAt if e.lastMessage else e.createdAt, e.enquiryId),
+            reverse=True,
+        )

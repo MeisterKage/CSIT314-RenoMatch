@@ -59,7 +59,9 @@ def test_send_enquiry_invalid_input_stores_nothing(client, scene, login, data):
 def test_send_enquiry_to_unknown_idp_is_404(client, scene, login):
     _, customer, _ = scene
     login(customer.username)
-    assert client.post("/idps/9999/enquiry", data={"subject": "a", "message": "b"}).status_code == 404
+    assert (
+        client.post("/idps/9999/enquiry", data={"subject": "a", "message": "b"}).status_code == 404
+    )
 
 
 def test_designer_inbox_lists_their_enquiries(client, scene, login, make_account, make_idp):
@@ -91,15 +93,15 @@ def test_designer_opens_a_thread_and_replies(client, scene, login):
     login(designer.username)
     page = client.get(f"/designer/enquiries/{enquiry.enquiryId}").data
     assert b"Is it still available?" in page
-    resp = client.post(
-        f"/designer/enquiries/{enquiry.enquiryId}", data={"body": "Yes, it is."}
-    )
+    resp = client.post(f"/designer/enquiries/{enquiry.enquiryId}", data={"body": "Yes, it is."})
     assert resp.status_code == 302
     assert [m.body for m in enquiry.messages] == ["Is it still available?", "Yes, it is."]
     assert b"Yes, it is." in client.get(f"/designer/enquiries/{enquiry.enquiryId}").data
 
 
-def test_designer_cannot_open_or_reply_to_another_designers_thread(client, scene, login, make_account):
+def test_designer_cannot_open_or_reply_to_another_designers_thread(
+    client, scene, login, make_account
+):
     _, customer, idp = scene
     login(customer.username)
     send(client, idp)
@@ -107,7 +109,10 @@ def test_designer_cannot_open_or_reply_to_another_designers_thread(client, scene
     client.post("/logout")
     login(make_account(role="designer").username)
     assert client.get(f"/designer/enquiries/{enquiry.enquiryId}").status_code == 404
-    assert client.post(f"/designer/enquiries/{enquiry.enquiryId}", data={"body": "hi"}).status_code == 404
+    assert (
+        client.post(f"/designer/enquiries/{enquiry.enquiryId}", data={"body": "hi"}).status_code
+        == 404
+    )
     assert len(enquiry.messages) == 1
 
 
@@ -136,7 +141,9 @@ def test_customer_sees_only_their_threads_and_can_reply(client, scene, login, ma
     theirs = EnquiryEntity.query.filter_by(userId=other.userId).one()
     assert client.get(f"/enquiries/{theirs.enquiryId}").status_code == 404
     assert client.post(f"/enquiries/{theirs.enquiryId}", data={"body": "x"}).status_code == 404
-    assert client.post(f"/enquiries/{mine.enquiryId}", data={"body": "Follow up"}).status_code == 302
+    assert (
+        client.post(f"/enquiries/{mine.enquiryId}", data={"body": "Follow up"}).status_code == 302
+    )
     assert [m.body for m in mine.messages][-1] == "Follow up"
 
 
