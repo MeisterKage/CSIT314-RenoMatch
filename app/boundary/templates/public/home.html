@@ -17,6 +17,7 @@
 </section>
 {% endblock %}
 {% block content %}
+{% from "browse/_idp_card.html" import idp_card %}
 {% set styles = [
   ("japandi", "Japandi", "Light timber, soft stone and nothing extra."),
   ("contemporary", "Contemporary", "Flat-panel cabinets and a quiet palette."),
@@ -25,6 +26,35 @@
   ("luxury", "Luxury", "Marble, timber veneer and warm lighting."),
   ("eclectic", "Eclectic", "Mixed colour, art and pieces collected over time."),
 ] %}
+{% if recommendedIdps %}
+<section class="section" id="recommended">
+  <div class="wrap">
+    <div class="section-head"><h2>Recommended for you</h2><p>Projects like the ones you have viewed or saved.</p></div>
+    <ul class="style-grid">{% for idp in recommendedIdps %}{{ idp_card(idp) }}{% endfor %}</ul>
+  </div>
+</section>
+{% elif popularIdps %}
+<section class="section" id="popular">
+  <div class="wrap">
+    <div class="section-head"><h2>Popular designs</h2><p>The most viewed projects on RenoMatch.</p></div>
+    <ul class="style-grid">{% for idp in popularIdps %}{{ idp_card(idp) }}{% endfor %}</ul>
+  </div>
+</section>
+{% elif recommendationMessage %}
+<section class="section" id="recommended">
+  <div class="wrap">
+    <div class="section-head"><h2>Recommended for you</h2></div>
+    <p class="muted">{{ recommendationMessage }}</p>
+  </div>
+</section>
+{% elif featuredIdps %}
+<section class="section" id="featured">
+  <div class="wrap">
+    <div class="section-head"><h2>Featured Designs</h2><p>Projects picked by the RenoMatch team.</p></div>
+    <ul class="style-grid">{% for idp in featuredIdps %}{{ idp_card(idp) }}{% endfor %}</ul>
+  </div>
+</section>
+{% endif %}
 <section class="section" id="styles">
   <div class="wrap">
     <div class="section-head">

@@ -4,6 +4,8 @@ from app.entity.db import db, utcnow
 from app.entity.platform_activity import PlatformActivityEntity
 
 PAGE_SIZE = 24
+RECOMMENDATION_LIMIT = 10
+FEATURED_LIMIT = 6
 
 IDP_STATUSES = ("Active", "Suspended", "Removed")
 IDP_STAGES = ("Current", "Past")
@@ -126,3 +128,78 @@ class IDPEntity(db.Model):
             .order_by(cls.createdAt.desc(), cls.idpId.desc())
             .all()
         )
+
+    @classmethod
+    def compareIDPs(cls, idpIds: "list[int]") -> "list[IDPEntity]":
+        """US-13 step 2.1.1: the Active IDPs among idpIds, in the order given.
+
+        Missing, Suspended and Removed IDPs are left out (alt 3a).
+        """
+        found = {
+            idp.idpId: idp
+            for idp in db.session.query(cls).filter(cls.idpId.in_(idpIds), cls.status == "Active")
+        }
+        return [found[idpId] for idpId in idpIds if idpId in found]
+
+    @classmethod
+    def getPopularIDPs(cls) -> "list[IDPEntity]":
+        """US-12 step 1.1.2: the top 10 Active IDPs by viewCount."""
+        return (
+            db.session.query(cls)
+            .filter_by(status="Active")
+            .order_by(cls.viewCount.desc(), cls.idpId.desc())
+            .limit(RECOMMENDATION_LIMIT)
+            .all()
+        )
+
+    @classmethod
+    def getFeaturedIDPs(cls) -> "list[IDPEntity]":
+        """US-60 home page: the 6 most recently featured Active IDPs."""
+        return (
+            db.session.query(cls)
+            .filter_by(status="Active", isFeatured=True)
+            .order_by(cls.featuredDate.desc(), cls.idpId.desc())
+            .limit(FEATURED_LIMIT)
+            .all()
+        )
+
+    @classmethod
+    def getRecommendedIDPs(cls, userId: int) -> "list[IDPEntity] | None":
+        """US-12 step 1.1.1: up to 10 Active IDPs like the ones the user viewed or saved.
+
+        Returns [] when the user has no viewing or saving history (alt 2a) and None when
+        there is history but nothing matches (alt 3a). An IDP matches by sharing a category
+        or a style with one in the history. Ranked by number of matches, then viewCount.
+        Saved IDPs are excluded.
+        """
+        from app.entity.favourite import FavouriteEntity
+
+        viewedIds = {
+            row[0]
+            for row in db.session.query(PlatformActivityEntity.idpId).filter(
+                PlatformActivityEntity.userId == userId,
+                PlatformActivityEntity.activityType == "view",
+                PlatformActivityEntity.idpId.isnot(None),
+            )
+        }
+        savedIds = {
+            row[0]
+            for row in db.session.query(FavouriteEntity.idpId).filter_by(userId=userId)
+        }
+        history = db.session.query(cls).filter(cls.idpId.in_(viewedIds | savedIds)).all()
+        if not history:
+            return []
+        categoryIds = {idp.categoryId for idp in history}
+        styles = {idp.style for idp in history}
+        candidates = db.session.query(cls).filter(
+            cls.status == "Active", cls.idpId.notin_(savedIds)
+        )
+        scored = [
+            ((idp.categoryId in categoryIds) + (idp.style in styles), idp)
+            for idp in candidates
+        ]
+        matches = [pair for pair in scored if pair[0] > 0]
+        if not matches:
+            return None
+        matches.sort(key=lambda pair: (-pair[0], -pair[1].viewCount, -pair[1].idpId))
+        return [idp for _, idp in matches[:RECOMMENDATION_LIMIT]]

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Compare designs · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section-head">
+      <h1 class="page-title">Compare designs</h1>
+      <p>Put up to three projects side by side.</p>
+    </div>
+    {% if message %}<div class="flash flash--danger" role="status">{{ message }}</div>{% endif %}
+    {% if idps %}
+    <div class="compare-scroll">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th scope="col"><span class="visually-hidden">Detail</span></th>
+            {% for idp in idps %}<th scope="col">{{ idp.title }}</th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Style</th>{% for idp in idps %}<td>{{ idp.style }}</td>{% endfor %}</tr>
+          <tr><th scope="row">Budget</th>{% for idp in idps %}<td>S${{ '{:,.0f}'.format(idp.budget) }}</td>{% endfor %}</tr>
+          <tr><th scope="row">Location</th>{% for idp in idps %}<td>{{ idp.location }}</td>{% endfor %}</tr>
+          <tr><th scope="row">Property type</th>{% for idp in idps %}<td>{{ idp.propertyType }}</td>{% endfor %}</tr>
+          <tr><th scope="row">Category</th>{% for idp in idps %}<td>{{ idp.category.name }}</td>{% endfor %}</tr>
+          <tr><th scope="row">Designer</th>{% for idp in idps %}<td>{{ idp.designer.name }}</td>{% endfor %}</tr>
+          <tr>
+            <th scope="row"><span class="visually-hidden">Details</span></th>
+            {% for idp in idps %}<td><a class="button button--outline" href="{{ url_for('browse.idp_details', idpId=idp.idpId) }}">View Details</a></td>{% endfor %}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+    <div class="actions compare-actions">
+      <a class="button" href="{{ url_for('browse.idps') }}">Browse designs</a>
+      {% if compareCount %}
+      <form method="post" action="{{ url_for('compare.clear') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="button button--outline" type="submit">Clear selection</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -3,6 +3,7 @@ def register_blueprints(app):
         admin,
         auth,
         browse,
+        compare,
         customer,
         designer,
         enquiries,
@@ -12,6 +13,6 @@ def register_blueprints(app):
     )
 
     for module in (
-        public, auth, browse, admin, designer, customer, enquiries, favourites, platform
+        public, auth, browse, compare, admin, designer, customer, enquiries, favourites, platform
     ):
         app.register_blueprint(module.bp)
