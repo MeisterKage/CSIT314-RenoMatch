@@ -9,6 +9,8 @@ from app.entity.db import db, utcnow
 ACCOUNT_STATUSES = ("Active", "Suspended")
 RESET_TOKEN_LIFETIME = timedelta(hours=1)
 DELETED_NAME = "Deleted user"
+MAX_FAILED_LOGINS = 5
+LOCK_DURATION = timedelta(minutes=15)
 
 
 def hashToken(token: str) -> str:
@@ -145,3 +147,24 @@ class UserAccountEntity(db.Model):
             and not self.isAnonymised
             and self.profile.status == "Active"
         )
+
+    def isLocked(self) -> bool:
+        """True while lockedUntil is in the future."""
+        return self.lockedUntil is not None and self.lockedUntil > utcnow()
+
+    def registerFailedLogin(self) -> None:
+        """Count a failed login. The fifth in a row locks the account for 15 minutes. A lock
+        that has run out is cleared first, so the count starts again from zero."""
+        if self.lockedUntil is not None and not self.isLocked():
+            self.lockedUntil = None
+            self.failedLogins = 0
+        self.failedLogins += 1
+        if self.failedLogins >= MAX_FAILED_LOGINS:
+            self.lockedUntil = utcnow() + LOCK_DURATION
+        db.session.commit()
+
+    def resetFailedLogins(self) -> None:
+        """A successful login clears the count and any expired lock."""
+        self.failedLogins = 0
+        self.lockedUntil = None
+        db.session.commit()
