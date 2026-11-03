@@ -70,7 +70,8 @@ def test_cli_command_sends_the_summaries(app, make_account, caplog):
 
 
 def test_github_workflow_schedule():
-    text = (Path(__file__).resolve().parents[2] / ".github/workflows/weekly-summary.yml").read_text()
+    root = Path(__file__).resolve().parents[2]
+    text = (root / ".github/workflows/weekly-summary.yml").read_text()
     assert 'cron: "0 1 * * 1"' in text
     assert "workflow_dispatch" in text
     assert "/internal/weekly-summary" in text

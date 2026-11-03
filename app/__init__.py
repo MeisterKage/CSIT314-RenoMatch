@@ -41,10 +41,12 @@ def create_app(test_config: dict | None = None) -> Flask:
     csrf.init_app(app)
 
     from app.boundary import register_blueprints
+    from app.boundary.weekly_summary_scheduler import register_weekly_summary_command
     from app.seed import register_seed_command, seed_database
 
     register_blueprints(app)
     register_seed_command(app)
+    register_weekly_summary_command(app)
 
     with app.app_context():
         db.create_all()

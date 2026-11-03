@@ -21,8 +21,11 @@ def addActivity(idp, activityType, daysAgo, count=1):
 
 def test_getOptedInDesigners_returns_only_active_opted_in_designers(make_account):
     wanted = make_account(role="designer")
-    make_account(role="designer", weeklySummaryOptIn=False)
-    make_account(role="designer", status="Suspended")
+    optedOut = make_account(role="designer")
+    optedOut.weeklySummaryOptIn = False
+    suspended = make_account(role="designer")
+    suspended.status = "Suspended"
+    db.session.commit()
     make_account(role="customer")
     assert IDPEntity.getOptedInDesigners() == [wanted]
 

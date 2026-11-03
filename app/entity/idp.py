@@ -1,12 +1,16 @@
-from sqlalchemy import or_, select, update
+from datetime import timedelta
+
+from sqlalchemy import func, or_, select, update
 
 from app.entity.db import db, utcnow
 from app.entity.idp_photos import deletePhoto, savePhoto
 from app.entity.platform_activity import PlatformActivityEntity
+from app.entity.reports import Summary
 
 PAGE_SIZE = 24
 RECOMMENDATION_LIMIT = 10
 FEATURED_LIMIT = 6
+WEEKLY_SUMMARY_DAYS = 7
 
 IDP_STATUSES = ("Active", "Suspended", "Removed")
 IDP_STAGES = ("Current", "Past")
@@ -373,3 +377,61 @@ class IDPEntity(db.Model):
             "topIDPs": idps[:5],
             "maxValue": max(figures, default=0),
         }
+
+    @classmethod
+    def getOptedInDesigners(cls) -> "list":
+        """US-48 step 1.1.1: the Active designers who have the weekly summary turned on.
+
+        A designer is an account whose profile has the designer role. Suspended accounts and
+        accounts on a suspended profile are left out. Ordered by userId.
+        """
+        from app.entity.user_account import UserAccountEntity
+        from app.entity.user_profile import UserProfileEntity
+
+        return (
+            db.session.query(UserAccountEntity)
+            .join(UserProfileEntity, UserAccountEntity.profileId == UserProfileEntity.profileId)
+            .filter(
+                UserProfileEntity.roleType == "designer",
+                UserProfileEntity.status == "Active",
+                UserAccountEntity.status == "Active",
+                UserAccountEntity.weeklySummaryOptIn.is_(True),
+            )
+            .order_by(UserAccountEntity.userId)
+            .all()
+        )
+
+    @classmethod
+    def getWeeklyStats(cls, designerId: int) -> Summary:
+        """US-48 step 1.1.2: the designer's views and shortlists of the last 7 days.
+
+        Counts `view` and `shortlist` PlatformActivityEntity rows for the designer's IDPs.
+        topIDPs holds up to 3 (title, views) pairs, the most viewed first. IDPs without a
+        view that week are not listed.
+        """
+        from app.entity.user_account import UserAccountEntity
+
+        now = utcnow()
+        since = now - timedelta(days=WEEKLY_SUMMARY_DAYS)
+        rows = (
+            db.session.query(cls.title, PlatformActivityEntity.activityType, func.count())
+            .join(PlatformActivityEntity, PlatformActivityEntity.idpId == cls.idpId)
+            .filter(
+                cls.designerId == designerId,
+                PlatformActivityEntity.timestamp >= since,
+                PlatformActivityEntity.activityType.in_(("view", "shortlist")),
+            )
+            .group_by(cls.idpId, cls.title, PlatformActivityEntity.activityType)
+            .all()
+        )
+        views = [(title, count) for title, kind, count in rows if kind == "view"]
+        designer = db.session.get(UserAccountEntity, designerId)
+        return Summary(
+            designerId=designerId,
+            startDate=since.date(),
+            endDate=now.date(),
+            designerName=designer.name if designer is not None else "",
+            totalViews=sum(count for _, count in views),
+            totalShortlists=sum(count for _, kind, count in rows if kind == "shortlist"),
+            topIDPs=sorted(views, key=lambda pair: (-pair[1], pair[0]))[:3],
+        )

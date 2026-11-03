@@ -47,7 +47,9 @@ def test_controller_holds_its_collaborators():
 def test_sends_a_summary_to_each_opted_in_designer(make_account, make_idp):
     active = make_account(role="designer")
     quiet = make_account(role="designer")
-    make_account(role="designer", weeklySummaryOptIn=False)
+    optedOut = make_account(role="designer")
+    optedOut.weeklySummaryOptIn = False
+    db.session.commit()
     addViews(make_idp(active, title="Sunny loft"), 3)
     stub = StubEmailService()
 

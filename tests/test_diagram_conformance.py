@@ -34,6 +34,7 @@ CONFORMING_USE_CASES: list[str] = [
     "US-34",
     "US-38",
     "US-43",
+    "US-48",
 ]
 
 # Where a class diagram and its sequence diagram disagree, the sequence diagram wins. Each
