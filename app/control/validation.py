@@ -33,3 +33,9 @@ def phone_problem(phone: str) -> str | None:
     if phone and not PHONE_PATTERN.fullmatch(phone):
         return "Phone number must be 8-15 digits, optionally starting with +."
     return None
+
+
+def website_problem(website: str) -> str | None:
+    if website and not re.fullmatch(r"https?://[^\s/]+\.[^\s/]+\S*", website):
+        return "Website must start with http:// or https://."
+    return None

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_field.html" import field with context %}
+{% block title %}Company information · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="wrap page">
+  <div class="auth__form">
+    <h1>{{ 'Company information' if exists else 'Add your company information' }}</h1>
+    <p>{{ 'Homeowners see these details on your profile. Update them any time.' if exists else 'Add your studio details before you publish a project. Only the name is required.' }}</p>
+    <form method="post" action="{{ url_for('company_info.company') }}" class="stack" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {{ field("name", "Company name") }}
+      <div class="field">
+        <label for="description">About your company (optional)</label>
+        <textarea id="description" name="description" rows="4">{{ form.get('description', '') }}</textarea>
+      </div>
+      {{ field("address", "Address (optional)", autocomplete="street-address") }}
+      {{ field("phone", "Phone (optional)", "tel", autocomplete="tel") }}
+      {{ field("email", "Email (optional)", "email", autocomplete="email") }}
+      {{ field("website", "Website (optional)", "url", hint="Start with https://") }}
+      <button class="button button--full" type="submit">{{ 'Save changes' if exists else 'Save company information' }}</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
