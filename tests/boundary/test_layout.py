@@ -40,7 +40,7 @@ def test_pages_have_skip_link_to_main_content(client):
         ("admin", "/admin/", b"Failed logins", b"Coming in Sprint 4"),
         ("designer", "/designer/", b"Project interest", b"Available"),
         ("customer", "/customer/", b"Search designs", b"Coming in Sprint 3"),
-        ("platform", "/platform/", b"Featured projects", b"Coming in Sprint 4"),
+        ("platform", "/platform/", b"Featured projects", b"Available"),
         ("platform", "/platform/", b"Activity reports", b"Available"),
     ],
 )

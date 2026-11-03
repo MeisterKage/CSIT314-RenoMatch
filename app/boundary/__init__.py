@@ -13,6 +13,7 @@ def register_blueprints(app):
         enquiries,
         favourites,
         interest,
+        moderation,
         platform,
         portfolio,
         public,
@@ -26,6 +27,6 @@ def register_blueprints(app):
         public, auth, reset_password, account, browse, compare, company_info, admin, audit_log,
         designer, customer, enquiries, favourites, interest, platform, categories, reports,
         portfolio, uploads,
-        weekly_summary_scheduler
+        weekly_summary_scheduler, moderation
     ):
         app.register_blueprint(module.bp)

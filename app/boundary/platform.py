@@ -19,8 +19,16 @@ TOOLS = [
         sprint=3,
         endpoint="reports.reports",
     ),
-    Tool("Featured projects", "Choose which projects appear on the home page.", sprint=4),
-    Tool("Reported projects", "Review projects users have reported and remove bad ones.", sprint=5),
+    Tool(
+        "Featured projects",
+        "Choose which projects appear on the home page.",
+        endpoint="moderation.featured",
+    ),
+    Tool(
+        "Reported projects",
+        "Review projects users have reported and remove bad ones.",
+        endpoint="moderation.reported",
+    ),
     CHANGE_PASSWORD,
 ]
 
