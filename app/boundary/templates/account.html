@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% from "_field.html" import field with context %}
+{% block title %}My account · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+{% set delete_errors = delete_errors or {} %}
+<div class="wrap page">
+  <div class="auth__form">
+    <h1>My account</h1>
+    <p>Keep your details up to date. Your username is {{ g.current_account.username }}.</p>
+    {% if notice %}<div class="flash" role="status">{{ notice }}</div>{% endif %}
+    <form method="post" action="{{ url_for('account.account') }}" class="stack" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {{ field("name", "Full name", autocomplete="name") }}
+      {{ field("email", "Email", "email", autocomplete="email") }}
+      {{ field("phone", "Phone (optional)", "tel", autocomplete="tel") }}
+      <button class="button button--full" type="submit">Save details</button>
+    </form>
+
+    <section class="account-section">
+      <h2>Password</h2>
+      <p><a href="{{ url_for('auth.change_password') }}">Change password</a></p>
+    </section>
+
+    {% if g.current_account.role == 'designer' %}
+    <section class="account-section">
+      <h2>Weekly summary</h2>
+      <p class="muted">Get your views and shortlists by email each Monday.</p>
+      <form method="post" action="{{ url_for('account.weekly_summary') }}" class="stack">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label class="choice">
+          <input type="checkbox" name="optIn" {% if g.current_account.weeklySummaryOptIn %}checked{% endif %}>
+          <span>Email me the weekly summary</span>
+        </label>
+        <button class="button button--outline" type="submit">Save preference</button>
+      </form>
+    </section>
+    {% endif %}
+
+    <section class="account-section">
+      <h2>Delete account</h2>
+      <p class="muted">This removes your name, email and phone number and logs you out. Your reviews and enquiries stay but show "Deleted user". This cannot be undone.</p>
+      <form method="post" action="{{ url_for('account.delete') }}" class="stack" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field{% if delete_errors.get('confirmUsername') %} has-error{% endif %}">
+          <label for="confirmUsername">Type your username to confirm</label>
+          <input id="confirmUsername" name="confirmUsername" autocomplete="off">
+          {% if delete_errors.get('confirmUsername') %}<p class="field-error">{{ delete_errors['confirmUsername'] }}</p>{% endif %}
+        </div>
+        <div class="field{% if delete_errors.get('password') %} has-error{% endif %}">
+          <label for="deletePassword">Password</label>
+          <input id="deletePassword" name="password" type="password" autocomplete="current-password">
+          {% if delete_errors.get('password') %}<p class="field-error">{{ delete_errors['password'] }}</p>{% endif %}
+        </div>
+        <button class="button button--outline" type="submit">Delete account</button>
+      </form>
+    </section>
+  </div>
+</div>
+{% endblock %}

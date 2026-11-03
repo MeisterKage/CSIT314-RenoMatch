@@ -1,8 +1,18 @@
+import hashlib
+import secrets
+from datetime import timedelta
+
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.entity.db import db, utcnow
 
 ACCOUNT_STATUSES = ("Active", "Suspended")
+RESET_TOKEN_LIFETIME = timedelta(hours=1)
+DELETED_NAME = "Deleted user"
+
+
+def hashToken(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
 
 
 class UserAccountEntity(db.Model):
@@ -72,6 +82,61 @@ class UserAccountEntity(db.Model):
 
     def changePassword(self, newPassword: str) -> None:
         self.setPassword(newPassword)
+        db.session.commit()
+
+    @classmethod
+    def requestPasswordReset(cls, email: str) -> str | None:
+        """Returns the raw reset token if the email is registered (truthy = emailFound in the
+        US-05 sequence diagram), else None. The database keeps only the token's hash, which
+        expires in 1 hour."""
+        account = cls.findByEmail(email.strip())
+        if account is None or not account.canLogIn():
+            return None
+        token = secrets.token_urlsafe(32)
+        account.resetToken = hashToken(token)
+        account.tokenExpiry = utcnow() + RESET_TOKEN_LIFETIME
+        db.session.commit()
+        return token
+
+    @classmethod
+    def resetPassword(cls, token: str, newPassword: str) -> bool:
+        """US-05 2.1.2: set the new password if the token matches and has not expired, then
+        discard the token so it cannot be used again."""
+        account = cls.query.filter_by(resetToken=hashToken(token)).first()
+        if account is None or account.tokenExpiry is None or account.tokenExpiry < utcnow():
+            return False
+        account.setPassword(newPassword)
+        account.resetToken = None
+        account.tokenExpiry = None
+        db.session.commit()
+        return True
+
+    def updateDetails(self, name: str, email: str, phone: str) -> None:
+        self.name = name
+        self.email = email.lower()
+        self.phone = phone
+        db.session.commit()
+
+    def setWeeklySummaryOptIn(self, optIn: bool) -> None:
+        self.weeklySummaryOptIn = optIn
+        db.session.commit()
+
+    def anonymise(self) -> None:
+        """US-08: replace the personal details. The row stays so reviews and enquiries keep
+        their links and show "Deleted user"."""
+        self.name = DELETED_NAME
+        self.username = f"deleted{self.userId}"
+        self.email = f"deleted{self.userId}@deleted.invalid"
+        self.phone = ""
+        self.resetToken = None
+        self.tokenExpiry = None
+        self.isAnonymised = True
+        if self.role == "designer":
+            from app.entity.idp import IDPEntity
+
+            for idp in IDPEntity.query.filter_by(designerId=self.userId):
+                idp.status = "Removed"
+                idp.isFeatured = False
         db.session.commit()
 
     def canLogIn(self) -> bool:

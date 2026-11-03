@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Password reset · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="wrap page">
+  <div class="auth__form">
+    <h1>Password reset</h1>
+    <div class="flash" role="status">Your password has been reset. You can log in now.</div>
+    <p class="auth__switch"><a class="button" href="{{ url_for('auth.login') }}">Log in</a></p>
+  </div>
+</div>
+{% endblock %}
