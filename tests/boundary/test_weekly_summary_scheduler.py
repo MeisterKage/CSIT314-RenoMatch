@@ -37,6 +37,12 @@ def test_endpoint_rejects_a_missing_or_wrong_token(client, make_account, monkeyp
     assert "Email to" not in caplog.text
 
 
+def test_endpoint_rejects_a_non_ascii_token_with_403(client, monkeypatch):
+    monkeypatch.setenv("WEEKLY_SUMMARY_TOKEN", TOKEN)
+    response = client.post(ENDPOINT, headers={"X-Summary-Token": "töken"})
+    assert response.status_code == 403
+
+
 def test_endpoint_with_the_token_sends_the_emails(client, make_account, monkeypatch, caplog):
     monkeypatch.setenv("WEEKLY_SUMMARY_TOKEN", TOKEN)
     designer = make_account(role="designer")
