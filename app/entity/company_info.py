@@ -1,12 +1,14 @@
 from app.entity.db import db, utcnow
 
 
-class CompanyInfo(db.Model):
+class CompanyInfoEntity(db.Model):
+    """A designer's company details. Each designer has at most one."""
+
     __tablename__ = "company_info"
 
-    id = db.Column(db.Integer, primary_key=True)
-    designer_id = db.Column(
-        db.Integer, db.ForeignKey("user_account.id"), unique=True, nullable=False
+    companyId = db.Column("id", db.Integer, primary_key=True)
+    designerId = db.Column(
+        "designer_id", db.Integer, db.ForeignKey("user_account.id"), unique=True, nullable=False
     )
     name = db.Column(db.String(120), nullable=False)
     description = db.Column(db.Text, nullable=False, default="")
@@ -14,7 +16,9 @@ class CompanyInfo(db.Model):
     phone = db.Column(db.String(20), nullable=False, default="")
     email = db.Column(db.String(120), nullable=False, default="")
     website = db.Column(db.String(200), nullable=False, default="")
-    created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
-    updated_at = db.Column(db.DateTime, nullable=False, default=utcnow, onupdate=utcnow)
+    createdAt = db.Column("created_at", db.DateTime, nullable=False, default=utcnow)
+    updatedAt = db.Column(
+        "updated_at", db.DateTime, nullable=False, default=utcnow, onupdate=utcnow
+    )
 
-    designer = db.relationship("UserAccount")
+    designer = db.relationship("UserAccountEntity")

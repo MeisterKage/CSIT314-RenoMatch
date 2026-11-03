@@ -54,7 +54,7 @@ def test_role_home_forbids_other_roles(client, make_account, login):
 def test_account_suspended_mid_session_is_sent_to_login(client, make_account, login):
     account = make_account(role="customer")
     login(account.username)
-    account.is_suspended = True
+    account.status = "Suspended"
     db.session.commit()
     assert client.get("/customer/").headers["Location"] == "/login"
 
@@ -65,5 +65,5 @@ def test_logged_in_user_visiting_login_goes_home(client, make_account, login):
 
 
 def test_role_home_greets_user_by_name(client, make_account, login):
-    login(make_account(role="designer", full_name="Dana Tan").username)
+    login(make_account(role="designer", name="Dana Tan").username)
     assert b"Dana Tan" in client.get("/designer/").data

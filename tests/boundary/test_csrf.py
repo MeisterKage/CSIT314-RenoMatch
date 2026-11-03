@@ -3,7 +3,7 @@ import re
 import pytest
 
 from app import create_app
-from app.entity import UserAccount, UserProfile, db
+from app.entity import UserAccountEntity, UserProfileEntity, db
 from app.entity.user_profile import DEFAULT_PROFILE_NAMES
 from tests.helpers import TEST_CONFIG, TEST_PASSWORD
 
@@ -13,13 +13,14 @@ def csrf_app():
     app = create_app({**TEST_CONFIG, "WTF_CSRF_ENABLED": True})
     with app.app_context():
         profiles = {
-            role: UserProfile.create(name, role) for role, name in DEFAULT_PROFILE_NAMES.items()
+            role: UserProfileEntity.createUserProfile(name, role)
+            for role, name in DEFAULT_PROFILE_NAMES.items()
         }
-        UserAccount.create(
+        UserAccountEntity.createUserAccount(
             username="csrfuser",
             email="csrfuser@example.com",
             password=TEST_PASSWORD,
-            full_name="CSRF User",
+            name="CSRF User",
             profile=profiles["customer"],
         )
         yield app

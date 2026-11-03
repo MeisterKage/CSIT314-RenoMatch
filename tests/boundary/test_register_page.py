@@ -1,4 +1,4 @@
-from app.entity import UserAccount
+from app.entity import UserAccountEntity
 
 FORM = {
     "username": "newuser",
@@ -20,7 +20,7 @@ def test_register_page_renders_for_anonymous_visitor(client, default_profiles):
 def test_register_creates_account_and_sends_user_to_login(client, default_profiles):
     resp = client.post("/register", data=FORM)
     assert resp.headers["Location"] == "/login"
-    assert UserAccount.find_by_username("newuser").role == "customer"
+    assert UserAccountEntity.findByUsername("newuser").role == "customer"
 
 
 def test_newly_registered_user_can_log_in(client, default_profiles, login):

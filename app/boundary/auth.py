@@ -37,7 +37,7 @@ class LoginPage(MethodView):
         except LoginError as error:
             return render_template("auth/login.html", error=str(error), username=username)
         session.clear()
-        session["account_id"] = account.id
+        session["account_id"] = account.userId
         return redirect(url_for(ROLE_HOME[account.role]))
 
 
@@ -83,7 +83,7 @@ class ChangePasswordPage(MethodView):
     def post(self):
         try:
             ChangePasswordController().change_password(
-                g.current_account.id,
+                g.current_account.userId,
                 request.form.get("current_password", ""),
                 request.form.get("new_password", ""),
                 request.form.get("confirm_password", ""),

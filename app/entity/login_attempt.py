@@ -1,11 +1,15 @@
 from app.entity.db import db, utcnow
 
 
-class LoginAttempt(db.Model):
+class LoginAttemptEntity(db.Model):
+    """One login attempt. userId is empty when the username matched no account."""
+
     __tablename__ = "login_attempt"
 
-    id = db.Column(db.Integer, primary_key=True)
+    attemptId = db.Column("id", db.Integer, primary_key=True)
     username = db.Column(db.String(30), nullable=False, index=True)
-    account_id = db.Column(db.Integer, db.ForeignKey("user_account.id"), nullable=True)
+    userId = db.Column("user_id", db.Integer, db.ForeignKey("user_account.id"), nullable=True)
     success = db.Column(db.Boolean, nullable=False)
-    attempted_at = db.Column(db.DateTime, nullable=False, default=utcnow, index=True)
+    attemptedAt = db.Column(
+        "attempted_at", db.DateTime, nullable=False, default=utcnow, index=True
+    )

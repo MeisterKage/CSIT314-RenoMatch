@@ -1,6 +1,6 @@
 from app.control.errors import ValidationError
 from app.control.validation import password_problem
-from app.entity import UserAccount
+from app.entity import UserAccountEntity
 
 
 class ChangePasswordController:
@@ -9,12 +9,12 @@ class ChangePasswordController:
     def change_password(
         self, account_id: int, current_password: str, new_password: str, confirm_password: str
     ) -> None:
-        account = UserAccount.find_by_id(account_id)
+        account = UserAccountEntity.findById(account_id)
         if account is None:
             raise LookupError(f"No account with id {account_id}")
 
         errors = {}
-        if not account.check_password(current_password):
+        if not account.checkPassword(current_password):
             errors["current_password"] = "Current password is incorrect."
         if problem := password_problem(new_password):
             errors["new_password"] = problem
@@ -25,4 +25,4 @@ class ChangePasswordController:
 
         if errors:
             raise ValidationError(errors)
-        account.change_password(new_password)
+        account.changePassword(new_password)

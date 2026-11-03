@@ -21,7 +21,7 @@ def register(**overrides):
 def test_register_customer_uses_default_customer_profile(default_profiles):
     account = register()
     assert account.profile.name == "Customer"
-    assert account.check_password("Passw0rd!")
+    assert account.checkPassword("Passw0rd!")
 
 
 def test_register_designer_uses_default_designer_profile(default_profiles):
@@ -70,7 +70,7 @@ def test_register_reports_every_problem_at_once(default_profiles):
 
 
 def test_register_is_closed_when_default_profile_is_suspended(default_profiles):
-    default_profiles["designer"].is_suspended = True
+    default_profiles["designer"].status = "Suspended"
     db.session.commit()
     with pytest.raises(ValidationError) as exc:
         register(role="designer")

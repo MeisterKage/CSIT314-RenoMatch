@@ -1,7 +1,7 @@
 <a class="nav-section" href="{{ url_for('public.home') }}#styles">Browse by style</a>
 <a class="nav-section" href="{{ url_for('public.home') }}#how">How it works</a>
 {% if g.current_account %}
-  <span class="who">{{ g.current_account.full_name }}</span>
+  <span class="who">{{ g.current_account.name }}</span>
   <a href="{{ url_for(ROLE_HOME[g.current_account.role]) }}">Home</a>
   <form method="post" action="{{ url_for('auth.logout') }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

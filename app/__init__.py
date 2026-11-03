@@ -2,8 +2,9 @@ import os
 
 from flask import Flask
 from flask_wtf.csrf import CSRFProtect
+from sqlalchemy.exc import OperationalError
 
-from app.entity import UserAccount, db
+from app.entity import UserAccountEntity, db
 
 DEV_SECRET_KEY = "dev-only-not-secret"
 
@@ -45,6 +46,19 @@ def create_app(test_config: dict | None = None) -> Flask:
 
     with app.app_context():
         db.create_all()
-        if app.config["SEED_ON_EMPTY"] and db.session.query(UserAccount).first() is None:
+        if app.config["SEED_ON_EMPTY"] and _has_no_accounts(app):
             seed_database()
     return app
+
+
+def _has_no_accounts(app: Flask) -> bool:
+    """True for an empty database. A database left with an older schema is not seeded,
+    so that `flask --app app seed --reset` can still start and rebuild it."""
+    try:
+        return db.session.query(UserAccountEntity).first() is None
+    except OperationalError:
+        db.session.rollback()
+        app.logger.warning(
+            "The database schema is out of date. Run: flask --app app seed --reset"
+        )
+        return False

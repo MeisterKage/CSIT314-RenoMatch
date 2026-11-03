@@ -1,18 +1,23 @@
 from app.entity.db import db, utcnow
 
 
-class Review(db.Model):
-    __tablename__ = "review"
-    __table_args__ = (db.CheckConstraint("rating BETWEEN 1 AND 5", name="ck_review_rating"),)
+class ReviewEntity(db.Model):
+    """A user's rating (1-5) and comment on a designer. One per (designerId, userId)."""
 
-    id = db.Column(db.Integer, primary_key=True)
-    customer_id = db.Column(db.Integer, db.ForeignKey("user_account.id"), nullable=False)
-    designer_id = db.Column(
-        db.Integer, db.ForeignKey("user_account.id"), nullable=False, index=True
+    __tablename__ = "review"
+    __table_args__ = (
+        db.CheckConstraint("rating BETWEEN 1 AND 5", name="ck_review_rating"),
+        db.UniqueConstraint("designer_id", "user_id", name="uq_review_designer_user"),
     )
+
+    reviewId = db.Column("id", db.Integer, primary_key=True)
+    designerId = db.Column(
+        "designer_id", db.Integer, db.ForeignKey("user_account.id"), nullable=False, index=True
+    )
+    userId = db.Column("user_id", db.Integer, db.ForeignKey("user_account.id"), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
     comment = db.Column(db.Text, nullable=False, default="")
-    created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
+    createdAt = db.Column("created_at", db.DateTime, nullable=False, default=utcnow)
 
-    customer = db.relationship("UserAccount", foreign_keys=[customer_id])
-    designer = db.relationship("UserAccount", foreign_keys=[designer_id])
+    designer = db.relationship("UserAccountEntity", foreign_keys=[designerId])
+    user = db.relationship("UserAccountEntity", foreign_keys=[userId])

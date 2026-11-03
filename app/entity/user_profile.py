@@ -1,6 +1,7 @@
 from app.entity.db import db
 
 ROLE_TYPES = ("admin", "designer", "customer", "platform")
+PROFILE_STATUSES = ("Active", "Suspended")
 
 DEFAULT_PROFILE_NAMES = {
     "admin": "User Admin",
@@ -10,31 +11,35 @@ DEFAULT_PROFILE_NAMES = {
 }
 
 
-class UserProfile(db.Model):
+class UserProfileEntity(db.Model):
+    """A user profile: a named group of accounts that share one role type."""
+
     __tablename__ = "user_profile"
 
-    id = db.Column(db.Integer, primary_key=True)
+    profileId = db.Column("id", db.Integer, primary_key=True)
     name = db.Column(db.String(60), unique=True, nullable=False)
     description = db.Column(db.String(255), nullable=False, default="")
-    role_type = db.Column(db.String(20), nullable=False)
-    is_suspended = db.Column(db.Boolean, nullable=False, default=False)
+    roleType = db.Column("role_type", db.String(20), nullable=False)
+    status = db.Column(db.String(10), nullable=False, default="Active")
 
-    accounts = db.relationship("UserAccount", back_populates="profile")
+    accounts = db.relationship("UserAccountEntity", back_populates="profile")
 
     @classmethod
-    def create(cls, name: str, role_type: str, description: str = "") -> "UserProfile":
-        if role_type not in ROLE_TYPES:
-            raise ValueError(f"Unknown role type: {role_type}")
-        profile = cls(name=name, role_type=role_type, description=description)
+    def createUserProfile(
+        cls, name: str, roleType: str, description: str = ""
+    ) -> "UserProfileEntity":
+        if roleType not in ROLE_TYPES:
+            raise ValueError(f"Unknown role type: {roleType}")
+        profile = cls(name=name, roleType=roleType, description=description)
         db.session.add(profile)
         db.session.commit()
         return profile
 
     @classmethod
-    def find_by_name(cls, name: str) -> "UserProfile | None":
+    def findByName(cls, name: str) -> "UserProfileEntity | None":
         return cls.query.filter_by(name=name).first()
 
     @classmethod
-    def find_default_for_role(cls, role_type: str) -> "UserProfile | None":
-        name = DEFAULT_PROFILE_NAMES.get(role_type)
-        return cls.find_by_name(name) if name else None
+    def findDefaultForRole(cls, roleType: str) -> "UserProfileEntity | None":
+        name = DEFAULT_PROFILE_NAMES.get(roleType)
+        return cls.findByName(name) if name else None

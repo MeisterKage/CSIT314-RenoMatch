@@ -1,15 +1,27 @@
+from sqlalchemy import event
+
 from app.entity.db import db, utcnow
 
 
-class AuditLog(db.Model):
+class AuditLogEntity(db.Model):
+    """A record of an admin changing an account or profile. Read-only after insert."""
+
     __tablename__ = "audit_log"
 
-    id = db.Column(db.Integer, primary_key=True)
-    actor_id = db.Column(db.Integer, db.ForeignKey("user_account.id"), nullable=False, index=True)
+    logId = db.Column("id", db.Integer, primary_key=True)
+    adminId = db.Column(
+        "admin_id", db.Integer, db.ForeignKey("user_account.id"), nullable=False, index=True
+    )
     action = db.Column(db.String(50), nullable=False)
-    target_type = db.Column(db.String(30), nullable=False)
-    target_id = db.Column(db.Integer, nullable=False)
+    targetType = db.Column("target_type", db.String(30), nullable=False)
+    targetId = db.Column("target_id", db.Integer, nullable=False)
     details = db.Column(db.String(255), nullable=False, default="")
-    created_at = db.Column(db.DateTime, nullable=False, default=utcnow, index=True)
+    timestamp = db.Column(db.DateTime, nullable=False, default=utcnow, index=True)
 
-    actor = db.relationship("UserAccount")
+    admin = db.relationship("UserAccountEntity")
+
+
+@event.listens_for(AuditLogEntity, "before_update")
+@event.listens_for(AuditLogEntity, "before_delete")
+def _refuse_changes(mapper, connection, target):
+    raise ValueError("Audit log records are read-only after insert.")
