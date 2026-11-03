@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% from "browse/_idp_card.html" import idp_card %}
+{% block title %}Browse designs · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section-head">
+      <h1 class="page-title">Browse designs</h1>
+      <p>Finished projects from Singapore interior designers. Filter by style, home type and budget.</p>
+    </div>
+    <form class="filters" method="get" action="{{ url_for('browse.idps') }}">
+      <div class="field filters__wide">
+        <label for="keyword">Keyword</label>
+        <input id="keyword" name="keyword" value="{{ filters.keyword }}" placeholder="Title or description">
+      </div>
+      <div class="field">
+        <label for="category">Category</label>
+        <select id="category" name="category">
+          <option value="">Any</option>
+          {% for category in categories %}
+          <option value="{{ category.categoryId }}"{% if selectedCategory == category.categoryId %} selected{% endif %}>{{ category.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="style">Style</label>
+        <select id="style" name="style">
+          <option value="">Any</option>
+          {% for style in styles %}
+          <option value="{{ style }}"{% if filters.style == style %} selected{% endif %}>{{ style }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="propertyType">Property type</label>
+        <select id="propertyType" name="propertyType">
+          <option value="">Any</option>
+          {% for type in propertyTypes %}
+          <option value="{{ type }}"{% if filters.propertyType == type %} selected{% endif %}>{{ type }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="minBudget">Min budget (S$)</label>
+        <input id="minBudget" name="minBudget" inputmode="numeric" value="{{ filters.minBudget }}">
+      </div>
+      <div class="field">
+        <label for="maxBudget">Max budget (S$)</label>
+        <input id="maxBudget" name="maxBudget" inputmode="numeric" value="{{ filters.maxBudget }}">
+      </div>
+      <div class="filters__actions">
+        <button class="button" type="submit">Search</button>
+        {% if pageArgs %}<a class="button button--outline" href="{{ url_for('browse.idps') }}">Clear</a>{% endif %}
+      </div>
+    </form>
+
+    {% if results.items %}
+    <p class="muted result-count">{{ results.total }} design{{ '' if results.total == 1 else 's' }}</p>
+    <ul class="style-grid">
+      {% for idp in results.items %}{{ idp_card(idp) }}{% endfor %}
+    </ul>
+    {% if results.pages > 1 %}
+    <nav class="pager" aria-label="Pages">
+      {% if results.has_prev %}<a class="button button--outline" rel="prev" href="{{ url_for('browse.idps', page=results.prev_num, **pageArgs) }}">Previous</a>{% endif %}
+      <span class="muted">Page {{ results.page }} of {{ results.pages }}</span>
+      {% if results.has_next %}<a class="button button--outline" rel="next" href="{{ url_for('browse.idps', page=results.next_num, **pageArgs) }}">Next</a>{% endif %}
+    </nav>
+    {% endif %}
+    {% else %}
+    <p class="empty">No designs match your search. Try fewer filters.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -193,7 +193,9 @@ def test_designer_profile_without_reviews_or_company(client, make_account):
 
 def test_designer_profile_404(client, make_account):
     customer = make_account()
-    suspended = make_account(role="designer", status="Suspended")
+    suspended = make_account(role="designer")
+    suspended.status = "Suspended"
+    db.session.commit()
     assert client.get(f"/designers/{customer.userId}").status_code == 404
     assert client.get(f"/designers/{suspended.userId}").status_code == 404
     assert client.get("/designers/9999").status_code == 404

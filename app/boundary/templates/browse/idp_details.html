@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ idp.title }} · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <p class="crumbs"><a href="{{ url_for('browse.idps') }}">&larr; All designs</a></p>
+    <h1 class="page-title">{{ idp.title }}</h1>
+    <p class="muted">{{ idp.style }} · {{ idp.propertyType }} · {{ idp.location }}</p>
+
+    {% if idp.photoUrls %}
+    <ul class="gallery">
+      {% for url in idp.photoUrls %}
+      <li><img src="{{ url }}" alt="{{ idp.title }}, photo {{ loop.index }}" {% if not loop.first %}loading="lazy" {% endif %}width="1200" height="800"></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <div class="detail-grid">
+      <div>
+        <h2 class="h-small">About this project</h2>
+        <p>{{ idp.description or 'The designer has not added a description yet.' }}</p>
+      </div>
+      <aside class="detail-card">
+        <dl class="facts">
+          <dt>Budget</dt><dd>S${{ '{:,.0f}'.format(idp.budget) }}</dd>
+          <dt>Style</dt><dd>{{ idp.style }}</dd>
+          <dt>Property type</dt><dd>{{ idp.propertyType }}</dd>
+          <dt>Location</dt><dd>{{ idp.location }}</dd>
+          <dt>Category</dt><dd>{{ idp.category.name }}</dd>
+          <dt>Stage</dt><dd>{{ idp.stage }}</dd>
+          <dt>Designer</dt>
+          <dd><a href="{{ url_for('browse.designer_profile', designerId=idp.designerId) }}">{{ idp.designer.name }}</a></dd>
+        </dl>
+        <a class="button button--full" href="{{ url_for('browse.designer_profile', designerId=idp.designerId) }}">View designer</a>
+
+        {# US-13: the compare selection is handled by POST /compare/select. #}
+        <form class="compare-form" method="post" action="/compare/select">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label class="compare-form__check">
+            <input type="checkbox" name="idpId" value="{{ idp.idpId }}" required>
+            Compare
+          </label>
+          <button class="button button--outline" type="submit">Add to compare</button>
+        </form>
+
+        {# US-14 (save favourite) and US-18 (send enquiry) add their forms here. #}
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -57,7 +57,9 @@ def test_view_designer_profile(make_account, make_idp):
 
 def test_view_designer_profile_rejects_non_designers(make_account):
     customer = make_account()
-    suspended = make_account(role="designer", status="Suspended")
+    suspended = make_account(role="designer")
+    suspended.status = "Suspended"
+    db.session.commit()
     controller = ViewDesignerProfileController()
     assert controller.viewDesignerProfile(customer.userId) is None
     assert controller.viewDesignerProfile(suspended.userId) is None

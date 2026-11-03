@@ -22,3 +22,8 @@ class CategoryEntity(db.Model):
             .filter_by(categoryId=self.categoryId, status="Active")
             .count()
         )
+
+    @classmethod
+    def getActiveCategories(cls) -> "list[CategoryEntity]":
+        """Active categories by name, for the browse filter."""
+        return db.session.query(cls).filter_by(status="Active").order_by(cls.name).all()

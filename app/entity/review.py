@@ -1,3 +1,5 @@
+from sqlalchemy import func
+
 from app.entity.db import db, utcnow
 
 
@@ -21,3 +23,21 @@ class ReviewEntity(db.Model):
 
     designer = db.relationship("UserAccountEntity", foreign_keys=[designerId])
     user = db.relationship("UserAccountEntity", foreign_keys=[userId])
+
+    @classmethod
+    def getAverageRating(cls, designerId: int) -> float:
+        """The mean rating of a designer's reviews, or 0.0 when there are none."""
+        average = (
+            db.session.query(func.avg(cls.rating)).filter(cls.designerId == designerId).scalar()
+        )
+        return float(average) if average is not None else 0.0
+
+    @classmethod
+    def getReviews(cls, designerId: int) -> "list[ReviewEntity]":
+        """A designer's reviews, newest first."""
+        return (
+            db.session.query(cls)
+            .filter_by(designerId=designerId)
+            .order_by(cls.createdAt.desc(), cls.reviewId.desc())
+            .all()
+        )

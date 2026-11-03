@@ -1,0 +1,15 @@
+{# A rounded photo card with caption, in the style of the home page gallery. #}
+{% macro idp_card(idp) %}
+<li class="idp-card">
+  <a class="idp-card__link" href="{{ url_for('browse.idp_details', idpId=idp.idpId) }}">
+    {% if idp.photoUrls %}
+      <img src="{{ idp.photoUrls[0] }}" alt="{{ idp.title }}" loading="lazy" width="900" height="675">
+    {% else %}
+      <div class="idp-card__empty" role="img" aria-label="No photo yet"></div>
+    {% endif %}
+    <h3>{{ idp.title }}</h3>
+    <p>{{ idp.style }} · {{ idp.propertyType }} · {{ idp.location }}</p>
+    <p class="idp-card__budget">S${{ '{:,.0f}'.format(idp.budget) }}</p>
+  </a>
+</li>
+{% endmacro %}
