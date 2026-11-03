@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}My portfolio · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="portfolio-head">
+      <div class="section-head">
+        <h1 class="page-title">My portfolio</h1>
+        <p>Your interior design projects. Open one to see its photos, edit it or remove it.</p>
+      </div>
+      <a class="button" href="{{ url_for('portfolio.new_idp') }}">+ Add IDP</a>
+    </div>
+    <form class="filters" method="get" action="{{ url_for('portfolio.portfolio') }}">
+      <div class="field filters__wide">
+        <label for="keyword">Search my projects</label>
+        <input id="keyword" name="keyword" value="{{ keyword }}" placeholder="Title or description">
+      </div>
+      <div class="filters__actions">
+        <button class="button" type="submit">Search</button>
+        {% if keyword %}<a class="button button--outline" href="{{ url_for('portfolio.portfolio') }}">Clear</a>{% endif %}
+      </div>
+    </form>
+
+    {% if idps %}
+    <ul class="style-grid">
+      {% for idp in idps %}
+      <li class="idp-card">
+        <a class="idp-card__link" href="{{ url_for('portfolio.idp_details', idpId=idp.idpId) }}">
+          {% if idp.photoUrls %}
+            <img src="{{ idp.photoUrls[0] }}" alt="{{ idp.title }}" loading="lazy" width="900" height="675">
+          {% else %}
+            <div class="idp-card__empty" role="img" aria-label="No photo yet"></div>
+          {% endif %}
+          <h3>{{ idp.title }}</h3>
+          <p>{{ idp.style }} · {{ idp.propertyType }} · {{ idp.location }}</p>
+          <p class="idp-card__budget">S${{ '{:,.0f}'.format(idp.budget) }}</p>
+        </a>
+        <span class="badge {{ 'badge--ok' if idp.status == 'Active' else 'badge--warn' }}">{{ idp.status }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% elif keyword %}
+    <p class="empty">No projects match your search.</p>
+    {% else %}
+    <p class="empty">You have no projects yet. <a href="{{ url_for('portfolio.new_idp') }}">Add your first one</a> to show homeowners your work.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

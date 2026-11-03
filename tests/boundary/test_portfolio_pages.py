@@ -140,8 +140,8 @@ def test_add_valid_idp_saves_photos_and_redirects(client, designer, company, for
     assert len(saved) == 2
     assert {f"/uploads/{f.name}" for f in saved} == set(idp.photoUrls)
     assert PlatformActivityEntity.query.filter_by(activityType="idp_added").count() == 1
-    assert "Bright kitchen" in client.get("/designer/portfolio").data.decode()
-    assert b"Your project has been added." in client.get("/designer/portfolio").data
+    listing = client.get("/designer/portfolio").data.decode()
+    assert "Bright kitchen" in listing and "Your project has been added." in listing
 
 
 def test_6a_missing_fields_shows_message_keeps_values_and_saves_nothing(

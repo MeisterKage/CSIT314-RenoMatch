@@ -1,6 +1,7 @@
 from sqlalchemy import or_, select, update
 
 from app.entity.db import db, utcnow
+from app.entity.idp_photos import deletePhoto, savePhoto
 from app.entity.platform_activity import PlatformActivityEntity
 
 PAGE_SIZE = 24
@@ -203,3 +204,124 @@ class IDPEntity(db.Model):
             return None
         matches.sort(key=lambda pair: (-pair[0], -pair[1].viewCount, -pair[1].idpId))
         return [idp for _, idp in matches[:RECOMMENDATION_LIMIT]]
+
+    @classmethod
+    def addIDP(cls, idp: dict, photos: list) -> bool:
+        """US-38 step 1.1.2: save a new IDP for idp["designerId"], with its photos.
+
+        idp is a dict of the form fields, already validated by the controller. Returns False
+        and saves nothing when the category is not Active (6c). Otherwise saves each photo
+        under a random name, stores their /uploads/ URLs in photoUrls, records an `idp_added`
+        PlatformActivityEntity and returns True.
+        """
+        from app.entity.category import CategoryEntity
+
+        category = db.session.get(CategoryEntity, int(idp["categoryId"]))
+        if category is None or category.status != "Active":
+            return False
+        urls = [savePhoto(photo) for photo in photos]
+        try:
+            record = cls(
+                designerId=idp["designerId"],
+                categoryId=category.categoryId,
+                photoUrls=urls,
+                **cls._fieldValues(idp),
+            )
+            db.session.add(record)
+            db.session.flush()
+            db.session.add(
+                PlatformActivityEntity(
+                    activityType="idp_added", userId=record.designerId, idpId=record.idpId
+                )
+            )
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            for url in urls:
+                deletePhoto(url)
+            raise
+        return True
+
+    @staticmethod
+    def _fieldValues(idp: dict) -> dict:
+        """The column values for the form fields of idp, trimmed and converted."""
+        return {
+            "title": idp["title"].strip(),
+            "description": idp["description"].strip(),
+            "style": idp["style"],
+            "propertyType": idp["propertyType"],
+            "budget": float(idp["budget"]),
+            "location": idp["location"].strip(),
+            "stage": idp.get("stage") or "Current",
+        }
+
+    @classmethod
+    def searchMyIDPs(cls, designerId: int, keyword: str | None) -> "list[IDPEntity]":
+        """US-42: the designer's IDPs, whatever their status except Removed, newest first.
+
+        keyword matches the title or description, ignoring case. Blank or None lists all.
+        """
+        query = db.session.query(cls).filter(cls.designerId == designerId, cls.status != "Removed")
+        if keyword and keyword.strip():
+            pattern = f"%{keyword.strip()}%"
+            query = query.filter(or_(cls.title.ilike(pattern), cls.description.ilike(pattern)))
+        return query.order_by(cls.createdAt.desc(), cls.idpId.desc()).all()
+
+    @classmethod
+    def getMyIDP(cls, designerId: int, idpId: int) -> "IDPEntity | None":
+        """US-39: the IDP when it belongs to the designer and is not Removed, else None."""
+        record = db.session.get(cls, idpId)
+        if record is None or record.designerId != designerId or record.status == "Removed":
+            return None
+        return record
+
+    @classmethod
+    def updateIDP(cls, designerId: int, idpId: int, idp: dict, photos: list) -> "bool | None":
+        """US-40: change the designer's own IDP. Returns None when it is not theirs.
+
+        idp["removePhotos"] lists photo URLs to drop and photos are new uploads to add. Returns
+        False when the category is changed to one that is not Active (6c). Otherwise saves the
+        changes, deletes the dropped files and returns True.
+        """
+        from app.entity.category import CategoryEntity
+
+        record = cls.getMyIDP(designerId, idpId)
+        if record is None:
+            return None
+        category = db.session.get(CategoryEntity, int(idp["categoryId"]))
+        if category is None or (
+            category.status != "Active" and category.categoryId != record.categoryId
+        ):
+            return False
+        toRemove = set(idp.get("removePhotos") or [])
+        dropped = [url for url in record.photoUrls if url in toRemove]
+        added = [savePhoto(photo) for photo in photos]
+        for name, value in cls._fieldValues(idp).items():
+            setattr(record, name, value)
+        record.categoryId = category.categoryId
+        record.photoUrls = [url for url in record.photoUrls if url not in dropped] + added
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            for url in added:
+                deletePhoto(url)
+            raise
+        for url in dropped:
+            deletePhoto(url)
+        return True
+
+    @classmethod
+    def deleteIDP(cls, designerId: int, idpId: int) -> bool:
+        """US-41: mark the designer's own IDP Removed and un-feature it. False if not theirs.
+
+        The row stays so reports and history keep working. A Removed IDP is hidden everywhere.
+        """
+        record = cls.getMyIDP(designerId, idpId)
+        if record is None:
+            return False
+        record.status = "Removed"
+        record.isFeatured = False
+        record.featuredDate = None
+        db.session.commit()
+        return True

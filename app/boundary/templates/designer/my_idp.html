@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ idp.title }} · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <p class="crumbs"><a href="{{ url_for('portfolio.portfolio') }}">&larr; My portfolio</a></p>
+    <h1 class="page-title">{{ idp.title }} <span class="badge {{ 'badge--ok' if idp.status == 'Active' else 'badge--warn' }}">{{ idp.status }}</span></h1>
+    <p class="muted">{{ idp.style }} · {{ idp.propertyType }} · {{ idp.location }}</p>
+
+    {% if idp.photoUrls %}
+    <ul class="gallery">
+      {% for url in idp.photoUrls %}
+      <li><img src="{{ url }}" alt="{{ idp.title }}, photo {{ loop.index }}" {% if not loop.first %}loading="lazy" {% endif %}width="1200" height="800"></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <div class="detail-grid">
+      <div>
+        <h2 class="h-small">About this project</h2>
+        <p>{{ idp.description }}</p>
+      </div>
+      <aside class="detail-card">
+        <dl class="facts">
+          <dt>Budget</dt><dd>S${{ '{:,.0f}'.format(idp.budget) }}</dd>
+          <dt>Category</dt><dd>{{ idp.category.name }}</dd>
+          <dt>Stage</dt><dd>{{ idp.stage }}</dd>
+          <dt>Status</dt><dd>{{ idp.status }}</dd>
+        </dl>
+        <a class="button button--full" href="{{ url_for('portfolio.edit_idp', idpId=idp.idpId) }}">Edit project</a>
+        <form class="favourite-remove" method="post" action="{{ url_for('portfolio.delete_idp', idpId=idp.idpId) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="link-button" type="submit">Remove from my portfolio</button>
+        </form>
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}

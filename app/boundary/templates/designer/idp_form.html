@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% from "_field.html" import field with context %}
+{% set isEdit = idp is defined and idp is not none %}
+{% block title %}{{ 'Edit project' if isEdit else 'Add a project' }} · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="wrap page">
+  <div class="idp-form">
+    <p class="crumbs"><a href="{{ url_for('portfolio.portfolio') }}">&larr; My portfolio</a></p>
+    <h1>{{ 'Edit project' if isEdit else 'Add a project' }}</h1>
+    {% if needsCompany %}
+    <div class="flash flash--danger" role="alert">{{ message }}
+      <a href="{{ url_for('company_info.company') }}">Add company information</a></div>
+    {% else %}
+    {% set form = form or {} %}
+    {% set errors = errors or {} %}
+    <p>Every field is required, with at least one JPG or PNG photo of 5 MB or less.</p>
+    {% if message %}<div class="flash flash--danger" role="alert">{{ message }}</div>{% endif %}
+    <form method="post" enctype="multipart/form-data" class="stack" novalidate
+          action="{{ url_for('portfolio.edit_idp', idpId=idp.idpId) if isEdit else url_for('portfolio.new_idp') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {{ field("title", "Title") }}
+      <div class="field{% if errors.get('description') %} has-error{% endif %}">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="4">{{ form.get('description', '') }}</textarea>
+        {% if errors.get('description') %}<p class="field-error">{{ errors['description'] }}</p>{% endif %}
+      </div>
+      <div class="field{% if errors.get('categoryId') %} has-error{% endif %}">
+        <label for="categoryId">Category</label>
+        <select id="categoryId" name="categoryId">
+          <option value="">Choose a category</option>
+          {% for category in categories %}
+          <option value="{{ category.categoryId }}"{% if form.get('categoryId')|string == category.categoryId|string %} selected{% endif %}>{{ category.name }}{% if category.status != 'Active' %} (suspended){% endif %}</option>
+          {% endfor %}
+        </select>
+        {% if errors.get('categoryId') %}<p class="field-error">{{ errors['categoryId'] }}</p>{% endif %}
+      </div>
+      <div class="field{% if errors.get('style') %} has-error{% endif %}">
+        <label for="style">Style</label>
+        <select id="style" name="style">
+          <option value="">Choose a style</option>
+          {% for style in styles %}<option value="{{ style }}"{% if form.get('style') == style %} selected{% endif %}>{{ style }}</option>{% endfor %}
+        </select>
+        {% if errors.get('style') %}<p class="field-error">{{ errors['style'] }}</p>{% endif %}
+      </div>
+      <div class="field{% if errors.get('propertyType') %} has-error{% endif %}">
+        <label for="propertyType">Property type</label>
+        <select id="propertyType" name="propertyType">
+          <option value="">Choose a property type</option>
+          {% for type in propertyTypes %}<option value="{{ type }}"{% if form.get('propertyType') == type %} selected{% endif %}>{{ type }}</option>{% endfor %}
+        </select>
+        {% if errors.get('propertyType') %}<p class="field-error">{{ errors['propertyType'] }}</p>{% endif %}
+      </div>
+      {{ field("budget", "Budget (S$)", "number", hint="The total project cost in Singapore dollars.") }}
+      {{ field("location", "Location") }}
+      <div class="field">
+        <label for="stage">Stage</label>
+        <select id="stage" name="stage">
+          {% for stage in stages %}<option value="{{ stage }}"{% if form.get('stage', 'Current') == stage %} selected{% endif %}>{{ stage }}</option>{% endfor %}
+        </select>
+      </div>
+
+      {% if isEdit and idp.photoUrls %}
+      <fieldset class="photo-picker">
+        <legend>Current photos</legend>
+        <p class="hint">Tick a photo to remove it. At least one photo must stay.</p>
+        <ul class="photo-picker__list">
+          {% for url in idp.photoUrls %}
+          <li>
+            <img src="{{ url }}" alt="Photo {{ loop.index }} of {{ idp.title }}" loading="lazy" width="300" height="225">
+            <label class="choice"><input type="checkbox" name="removePhotos" value="{{ url }}"> <span>Remove</span></label>
+          </li>
+          {% endfor %}
+        </ul>
+      </fieldset>
+      {% endif %}
+      <div class="field{% if errors.get('photos') %} has-error{% endif %}">
+        <label for="photos">{{ 'Add more photos' if isEdit else 'Photos' }}</label>
+        <input id="photos" name="photos" type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png" multiple>
+        {% if errors.get('photos') %}<p class="field-error">{{ errors['photos'] }}</p>
+        {% else %}<p class="hint">JPG or PNG, up to 5 MB each.</p>{% endif %}
+      </div>
+      <button class="button button--full" type="submit">Save</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

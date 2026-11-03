@@ -25,6 +25,8 @@ def create_app(test_config: dict | None = None) -> Flask:
             "DATABASE_URL", "sqlite:///" + os.path.join(app.instance_path, "renomatch.db")
         ),
         SEED_ON_EMPTY=os.environ.get("SEED_ON_EMPTY", "1") == "1",
+        UPLOAD_FOLDER=os.path.join(app.instance_path, "uploads"),
+        MAX_CONTENT_LENGTH=30 * 1024 * 1024,
     )
     if test_config:
         app.config.update(test_config)

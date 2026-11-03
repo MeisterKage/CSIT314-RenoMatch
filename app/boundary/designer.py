@@ -12,7 +12,11 @@ TOOLS = [
         "Tell homeowners about your studio and how to reach it.",
         endpoint="company_info.company",
     ),
-    Tool("Portfolio projects", "Add current and past projects with photos and budgets.", sprint=2),
+    Tool(
+        "Portfolio projects",
+        "Add current and past projects with photos and budgets.",
+        endpoint="portfolio.portfolio",
+    ),
     Tool("Project interest", "See how often each project is viewed and shortlisted.", sprint=3),
     Tool("Interest dashboard", "See which styles and categories draw the most interest.", sprint=5),
     Tool(
