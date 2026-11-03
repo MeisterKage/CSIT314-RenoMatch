@@ -27,6 +27,14 @@ import app as app_package
 
 CONFORMING_USE_CASES: list[str] = ["US-19"]
 
+# Where a class diagram and its sequence diagram disagree, the sequence diagram wins. Each
+# entry names one method (use case, class, method) and the extra parameters, in order, that
+# it takes after the class diagram's own. US-19 sequence step 1.4 calls
+# displayReviewForm(existingReview) while the class diagram omits the parameter.
+SEQUENCE_DIAGRAM_PARAMETERS: dict[tuple[str, str, str], list[str]] = {
+    ("US-19", "DesignerProfilePage", "displayReviewForm"): ["existingReview"],
+}
+
 USE_CASES_DIR = Path(__file__).resolve().parent.parent / "docs" / "design" / "use-cases"
 ALL_USE_CASES = sorted(path.name for path in USE_CASES_DIR.glob("US-*") if path.is_dir())
 
@@ -136,6 +144,12 @@ def parameter_names(method) -> list[str]:
     ]
 
 
+def expected_parameters(use_case: str, box: DiagramClass, method: DiagramMethod) -> list[str]:
+    """The class diagram's parameters plus any sequence-diagram extras for this one method."""
+    extra = SEQUENCE_DIAGRAM_PARAMETERS.get((use_case, box.name, method.name), [])
+    return method.params + extra
+
+
 def check_class(use_case: str, box: DiagramClass, cls: type) -> list[str]:
     """Problems with `cls` against its diagram box; an empty list means it conforms."""
     where = f"{use_case} {box.name} ({cls.__module__})"
@@ -154,10 +168,12 @@ def check_class(use_case: str, box: DiagramClass, cls: type) -> list[str]:
                 f"{where}: missing method {method.name!r} [diagram: {method.text}]"
                 + did_you_mean(method.name, public_names(target))
             )
-        elif (params := parameter_names(actual)) != method.params:
+        elif (params := parameter_names(actual)) != (
+            expected := expected_parameters(use_case, box, method)
+        ):
             problems.append(
                 f"{where}: method {method.name!r} has parameters {params}, "
-                f"diagram has {method.params} [diagram: {method.text}]"
+                f"diagram has {expected} [diagram: {method.text}]"
             )
     return problems
 
@@ -204,7 +220,12 @@ def test_parser_reads_us32_class_diagram():
     entity = classes["AuditLogEntity"]
     assert "timestamp" in entity.attributes
     assert list(entity.attributes) == [
-        "logId", "adminId", "action", "targetType", "targetId", "timestamp",
+        "logId",
+        "adminId",
+        "action",
+        "targetType",
+        "targetId",
+        "timestamp",
     ]
     assert [(m.name, m.params) for m in entity.methods] == [
         ("getAuditLogs", ["startDate", "endDate"]),
@@ -238,7 +259,10 @@ def test_parser_handles_a_box_without_attributes_and_private_methods():
     controller = classes["SendWeeklySummaryController"]
     assert list(controller.attributes) == ["emailService", "entity"]
     assert [m.name for m in controller.methods] == [
-        "sendWeeklySummaries", "composeSummary", "composeNoActivityNotice", "scheduleRetry",
+        "sendWeeklySummaries",
+        "composeSummary",
+        "composeNoActivityNotice",
+        "scheduleRetry",
     ]
 
 
@@ -275,3 +299,19 @@ def test_check_reports_missing_instance_attribute_and_method():
     problems = check_class("US-32", box, EmptyController)
     assert any("missing attribute 'entity'" in p for p in problems)
     assert any("missing method 'getAuditLogs'" in p for p in problems)
+
+
+def test_sequence_diagram_exception_only_affects_its_one_method():
+    box = parse_class_diagram("US-19")["DesignerProfilePage"]
+    by_name = {m.name: m for m in box.methods}
+    assert by_name["displayReviewForm"].params == []
+    assert expected_parameters("US-19", box, by_name["displayReviewForm"]) == ["existingReview"]
+    assert expected_parameters("US-19", box, by_name["displayMessage"]) == []
+    assert expected_parameters("US-19", box, by_name["displayReview"]) == []
+    # The same method name in another use case or class stays strict.
+    assert expected_parameters("US-05", box, by_name["displayReviewForm"]) == []
+    other = DiagramClass("boundary", "SomethingElse")
+    assert expected_parameters("US-19", other, by_name["displayReviewForm"]) == []
+    assert set(SEQUENCE_DIAGRAM_PARAMETERS) == {
+        ("US-19", "DesignerProfilePage", "displayReviewForm")
+    }

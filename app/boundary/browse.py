@@ -167,9 +167,9 @@ class DesignerProfilePage(MethodView):
     then 2.2 or 2.3). The profile controller lives in `profileController` so that
     `controller` is the RateReviewDesignerController, as in the class diagram.
 
-    The display methods take no arguments, as in the class diagram. What the sequence
-    diagram passes to them is held on the page instead: `existingReview` for 1.4 and
-    `message` for 1.3 and 2.3.
+    displayReviewForm takes `existingReview` as sequence step 1.4 draws it (the class
+    diagram omits it; the sequence diagram wins). displayMessage takes no argument in
+    either diagram, so its text is held in `message`.
     """
 
     def __init__(self, writeReview=False):
@@ -177,7 +177,6 @@ class DesignerProfilePage(MethodView):
         self.controller = RateReviewDesignerController()
         self.writeReview = writeReview
         self.profile = None
-        self.existingReview = None
         self.message = None
         self.form = {"rating": None, "comment": ""}
         self.showForm = False
@@ -201,10 +200,10 @@ class DesignerProfilePage(MethodView):
         if status == "not_contacted":
             self.message = "You can only review designers you have contacted"
             return self.displayMessage()
-        self.existingReview = next(
+        existingReview = next(
             (review for review in self.profile.reviews if review.userId == userId), None
         )
-        return self.displayReviewForm()
+        return self.displayReviewForm(existingReview)
 
     def post(self, designerId):
         self.profile = self.profileController.viewDesignerProfile(designerId)
@@ -228,19 +227,16 @@ class DesignerProfilePage(MethodView):
     def displayProfile(self, profile):
         return render_template("browse/designer_profile.html", profile=profile)
 
-    def displayReviewForm(self):
-        """1.2 and 1.4: the form, filled with `existingReview` when the user has one."""
-        if self.existingReview is not None:
-            self.form = {
-                "rating": self.existingReview.rating,
-                "comment": self.existingReview.comment,
-            }
+    def displayReviewForm(self, existingReview=None):
+        """1.2 (no argument) and 1.4: the form, filled with `existingReview` when given."""
+        if existingReview is not None:
+            self.form = {"rating": existingReview.rating, "comment": existingReview.comment}
         return render_template(
             "browse/designer_profile.html",
             profile=self.profile,
             reviewForm=True,
             form=self.form,
-            editing=self.existingReview is not None,
+            editing=existingReview is not None,
         )
 
     def displayReview(self):
