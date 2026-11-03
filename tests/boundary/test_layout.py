@@ -35,25 +35,24 @@ def test_pages_have_skip_link_to_main_content(client):
 
 
 @pytest.mark.parametrize(
-    "role, home, tool, status",
+    "role, home, tools",
     [
-        ("admin", "/admin/", b"Failed logins", b"Coming in Sprint 4"),
-        ("designer", "/designer/", b"Project interest", b"Available"),
-        ("customer", "/customer/", b"Search designs", b"Coming in Sprint 3"),
-        ("platform", "/platform/", b"Featured projects", b"Available"),
-        ("platform", "/platform/", b"Activity reports", b"Available"),
+        ("admin", "/admin/", [b"Failed logins", b"Export accounts", b"Audit log"]),
+        ("designer", "/designer/", [b"Project interest", b"Weekly summary"]),
+        ("customer", "/customer/", [b"Search designs", b"Your details", b"Compare designs"]),
+        ("platform", "/platform/", [b"Featured projects", b"Activity reports"]),
     ],
 )
-def test_role_home_lists_its_tools_with_status(
-    client, make_account, login, role, home, tool, status
-):
+def test_role_home_lists_every_tool_as_a_link(client, make_account, login, role, home, tools):
     login(make_account(role=role).username)
     page = client.get(home).data
-    assert tool in page
-    assert status in page
+    assert b"Coming" not in page and b"sprint" not in page.lower()
+    for tool in tools:
+        assert tool in page
+    assert page.count(b'class="tool tool--available"') == page.count(b'<li class="tool ')
 
 
-def test_role_home_links_to_change_password_as_available(client, make_account, login):
+def test_role_home_links_to_change_password(client, make_account, login):
     login(make_account(role="customer").username)
     page = client.get("/customer/").data
     assert b'href="/account/password"' in page
