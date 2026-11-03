@@ -25,7 +25,7 @@ import pytest
 
 import app as app_package
 
-CONFORMING_USE_CASES: list[str] = ["US-05", "US-12", "US-13", "US-19"]
+CONFORMING_USE_CASES: list[str] = ["US-05", "US-12", "US-13", "US-19", "US-32", "US-34"]
 
 # Where a class diagram and its sequence diagram disagree, the sequence diagram wins. Each
 # entry names one method (use case, class, method) and the extra parameters, in order, that
@@ -234,9 +234,8 @@ def test_parser_reads_us32_class_diagram():
 
 
 def test_us32_audit_log_entity_attributes_exist_in_the_code(app):
-    """The attribute check passes against the real AuditLogEntity."""
+    """The attribute and method check passes against the real AuditLogEntity."""
     box = parse_class_diagram("US-32")["AuditLogEntity"]
-    box.methods = []  # getAuditLogs arrives with the US-32 task
     (cls,) = app_classes()["AuditLogEntity"]
     assert check_class("US-32", box, cls) == []
 

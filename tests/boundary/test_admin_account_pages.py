@@ -49,10 +49,9 @@ def test_actions_need_an_admin(client, make_account, login, action):
     assert client.post(f"/admin/accounts/{target.userId}/{action}").status_code == 403
 
 
-def test_page_classes_keep_the_controller_attribute_free_for_export(app):
-    page = ManageUserAccountsPage()
-    assert not hasattr(page, "controller")
-    assert hasattr(page, "searchController")
+def test_only_the_manage_page_has_the_export_controller_attribute(app):
+    assert hasattr(ManageUserAccountsPage(), "controller")
+    assert hasattr(ManageUserAccountsPage(), "searchController")
     assert not hasattr(UserAccountFormPage(), "controller")
 
 
@@ -82,10 +81,9 @@ def test_list_shows_accounts_with_profile_and_status(client, admin, make_account
     assert "Active" in page
 
 
-def test_list_has_a_disabled_export_button_placeholder(client, admin):
+def test_list_has_an_export_button(client, admin):
     page = text(client.get("/admin/accounts"))
     assert "Export CSV" in page
-    assert "disabled" in page
 
 
 def test_search_by_keyword_profile_and_status(client, admin, make_account):
