@@ -36,6 +36,14 @@ class UserProfileEntity(db.Model):
         return profile
 
     @classmethod
+    def findById(cls, profileId: int) -> "UserProfileEntity | None":
+        return db.session.get(cls, profileId)
+
+    @classmethod
+    def findAll(cls) -> list["UserProfileEntity"]:
+        return cls.query.order_by(cls.profileId).all()
+
+    @classmethod
     def findByName(cls, name: str) -> "UserProfileEntity | None":
         return cls.query.filter_by(name=name).first()
 
