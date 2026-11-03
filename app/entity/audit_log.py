@@ -20,6 +20,22 @@ class AuditLogEntity(db.Model):
 
     admin = db.relationship("UserAccountEntity")
 
+    @classmethod
+    def recordAction(
+        cls, adminId: int, action: str, targetType: str, targetId: int, details: str = ""
+    ) -> "AuditLogEntity":
+        """Write one audit row for an admin change."""
+        row = cls(
+            adminId=adminId,
+            action=action,
+            targetType=targetType,
+            targetId=targetId,
+            details=details[:255],
+        )
+        db.session.add(row)
+        db.session.commit()
+        return row
+
 
 @event.listens_for(AuditLogEntity, "before_update")
 @event.listens_for(AuditLogEntity, "before_delete")

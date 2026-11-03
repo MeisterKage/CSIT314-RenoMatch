@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{ account.username }} · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <p class="crumbs"><a href="{{ url_for('admin.accounts') }}">Back to user accounts</a></p>
+    <h1 class="page-title">{{ account.name }}</h1>
+    <p>
+      <span class="badge{% if account.status == 'Active' %} badge--ok{% else %} badge--warn{% endif %}">{{ account.status }}</span>
+      {% if account.isLocked() %}<span class="badge badge--lock">Locked</span>{% endif %}
+    </p>
+    <dl class="details">
+      <div><dt>User ID</dt><dd>{{ account.userId }}</dd></div>
+      <div><dt>Username</dt><dd>{{ account.username }}</dd></div>
+      <div><dt>Email</dt><dd>{{ account.email }}</dd></div>
+      <div><dt>Phone</dt><dd>{{ account.phone or 'Not given' }}</dd></div>
+      <div><dt>Profile</dt><dd>{{ account.profile.name }}</dd></div>
+      <div><dt>Failed logins</dt><dd>{{ account.failedLogins }}</dd></div>
+      <div><dt>Created</dt><dd>{{ account.createdAt.strftime('%d %b %Y') }}</dd></div>
+    </dl>
+    <div class="toolbar">
+      {% if not account.isAnonymised %}<a class="button" href="{{ url_for('admin.account_edit', userId=account.userId) }}">Edit account</a>{% endif %}
+      {% if account.isLocked() %}
+      <form method="post" action="{{ url_for('admin.account_unlock', userId=account.userId) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next" value="{{ url_for('admin.account_view', userId=account.userId) }}">
+        <button class="button button--outline" type="submit">Unlock</button>
+      </form>
+      {% endif %}
+      {% if account.status == 'Active' and account.userId != g.current_account.userId %}
+      <form method="post" action="{{ url_for('admin.account_suspend', userId=account.userId) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next" value="{{ url_for('admin.account_view', userId=account.userId) }}">
+        <button class="button button--outline" type="submit">Suspend</button>
+      </form>
+      {% elif account.status == 'Suspended' %}
+      <form method="post" action="{{ url_for('admin.account_reactivate', userId=account.userId) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next" value="{{ url_for('admin.account_view', userId=account.userId) }}">
+        <button class="button button--outline" type="submit">Reactivate</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

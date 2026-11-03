@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_field.html" import field with context %}
+{% set editing = account is not none %}
+{% block title %}{{ 'Update account' if editing else 'Create account' }} · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <p class="crumbs"><a href="{{ url_for('admin.accounts') }}">Back to user accounts</a></p>
+    <div class="auth__form">
+      <h1 class="page-title">{{ 'Update account' if editing else 'Create account' }}</h1>
+      {% if errors.get('account') %}<div class="flash flash--danger" role="alert">{{ errors['account'] }}</div>{% endif %}
+      <form method="post" class="stack" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% if editing %}
+        <p class="muted">Username: {{ account.username }}</p>
+        {% else %}
+        {{ field("username", "Username", autocomplete="off") }}
+        {% endif %}
+        {{ field("name", "Full name") }}
+        {{ field("email", "Email", "email") }}
+        {{ field("phone", "Phone (optional)", "tel") }}
+        {% if not editing %}
+        {{ field("password", "Temporary password", "password", autocomplete="new-password", hint="At least 8 characters with a letter and a digit.") }}
+        {% endif %}
+        <div class="field{% if errors.get('profileId') %} has-error{% endif %}">
+          <label for="profileId">Profile</label>
+          <select id="profileId" name="profileId"{% if errors.get('profileId') %} aria-invalid="true" aria-describedby="profileId-error"{% endif %}>
+            <option value="">Choose a profile</option>
+            {% for profile in profiles %}
+            <option value="{{ profile.profileId }}"{% if form.get('profileId') == profile.profileId %} selected{% endif %}{% if profile.status != 'Active' and form.get('profileId') != profile.profileId %} disabled{% endif %}>{{ profile.name }}{% if profile.status != 'Active' %} (suspended){% endif %}</option>
+            {% endfor %}
+          </select>
+          {% if errors.get('profileId') %}<p class="field-error" id="profileId-error">{{ errors['profileId'] }}</p>{% endif %}
+        </div>
+        <button class="button button--full" type="submit">{{ 'Save changes' if editing else 'Create account' }}</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

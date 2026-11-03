@@ -1208,3 +1208,122 @@ fieldset {
   font-size: 1.25rem;
   margin-bottom: 0.5rem;
 }
+
+/* Admin accounts --------------------------------------------------------- */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.toolbar form {
+  margin: 0;
+}
+
+.filters--accounts {
+  grid-template-columns: 2fr 1fr 1fr auto;
+}
+
+.button--small {
+  padding: 0.35rem 0.9rem;
+  font-size: 0.875rem;
+}
+
+.button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.data-table th {
+  color: var(--stone);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.row-actions form {
+  margin: 0;
+}
+
+.row-actions a {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.7rem;
+  border-radius: var(--pill);
+  background: var(--mist);
+  color: var(--stone);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.badge--ok {
+  background: var(--sage-tint);
+  color: var(--sage);
+}
+
+.badge--warn,
+.badge--lock {
+  background: var(--error-tint);
+  color: var(--error);
+}
+
+.details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 1rem 2rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.details dt {
+  color: var(--stone);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 60rem) {
+  .filters--accounts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 44rem) {
+  .filters--accounts {
+    grid-template-columns: 1fr;
+  }
+}

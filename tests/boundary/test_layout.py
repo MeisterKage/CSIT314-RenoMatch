@@ -37,7 +37,7 @@ def test_pages_have_skip_link_to_main_content(client):
 @pytest.mark.parametrize(
     "role, home, tool, status",
     [
-        ("admin", "/admin/", b"User accounts", b"Coming in Sprint 1"),
+        ("admin", "/admin/", b"User profiles", b"Coming in Sprint 1"),
         ("designer", "/designer/", b"Portfolio projects", b"Coming in Sprint 2"),
         ("customer", "/customer/", b"Search designs", b"Coming in Sprint 3"),
         ("platform", "/platform/", b"Activity reports", b"Coming in Sprint 3"),

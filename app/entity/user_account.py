@@ -2,13 +2,17 @@ import hashlib
 import secrets
 from datetime import timedelta
 
+from sqlalchemy import func, or_
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.entity.db import db, utcnow
+from app.entity.user_profile import UserProfileEntity
 
 ACCOUNT_STATUSES = ("Active", "Suspended")
 RESET_TOKEN_LIFETIME = timedelta(hours=1)
 DELETED_NAME = "Deleted user"
+MAX_FAILED_LOGINS = 5
+LOCK_DURATION = timedelta(minutes=15)
 
 
 def hashToken(token: str) -> str:
@@ -73,6 +77,30 @@ class UserAccountEntity(db.Model):
     @classmethod
     def findByEmail(cls, email: str) -> "UserAccountEntity | None":
         return cls.query.filter_by(email=email.lower()).first()
+
+    @classmethod
+    def searchUserAccounts(
+        cls, keyword: str, profile: str, status: str
+    ) -> list["UserAccountEntity"]:
+        """US-25 and US-34: accounts whose username, name or email contains keyword (ignoring
+        case), optionally limited to one profile and one status. `profile` is the profile
+        NAME (for example "Customer"), `status` is "Active" or "Suspended". An empty value
+        means no filter. Ordered by userId."""
+        query = cls.query
+        keyword = (keyword or "").strip().lower()
+        if keyword:
+            query = query.filter(
+                or_(
+                    func.lower(cls.username).contains(keyword, autoescape=True),
+                    func.lower(cls.name).contains(keyword, autoescape=True),
+                    func.lower(cls.email).contains(keyword, autoescape=True),
+                )
+            )
+        if profile:
+            query = query.join(cls.profile).filter(UserProfileEntity.name == profile)
+        if status:
+            query = query.filter(cls.status == status)
+        return query.order_by(cls.userId).all()
 
     def setPassword(self, password: str) -> None:
         self.passwordHash = generate_password_hash(password)
@@ -145,3 +173,46 @@ class UserAccountEntity(db.Model):
             and not self.isAnonymised
             and self.profile.status == "Active"
         )
+
+    def isLocked(self) -> bool:
+        """True while lockedUntil is in the future."""
+        return self.lockedUntil is not None and self.lockedUntil > utcnow()
+
+    def registerFailedLogin(self) -> None:
+        """Count a failed login. The fifth in a row locks the account for 15 minutes. A lock
+        that has run out is cleared first, so the count starts again from zero."""
+        if self.lockedUntil is not None and not self.isLocked():
+            self.lockedUntil = None
+            self.failedLogins = 0
+        self.failedLogins += 1
+        if self.failedLogins >= MAX_FAILED_LOGINS:
+            self.lockedUntil = utcnow() + LOCK_DURATION
+        db.session.commit()
+
+    def resetFailedLogins(self) -> None:
+        """A successful login clears the count and any expired lock."""
+        self.failedLogins = 0
+        self.lockedUntil = None
+        db.session.commit()
+
+    def updateUserAccount(self, name: str, email: str, phone: str, profile) -> None:
+        """US-22: an administrator changes the details and the profile."""
+        self.name = name
+        self.email = email.lower()
+        self.phone = phone
+        self.profile = profile
+        db.session.commit()
+
+    def suspend(self) -> None:
+        self.status = "Suspended"
+        db.session.commit()
+
+    def reactivate(self) -> None:
+        self.status = "Active"
+        db.session.commit()
+
+    def unlock(self) -> None:
+        """US-33: clear the lock and the failed login count."""
+        self.failedLogins = 0
+        self.lockedUntil = None
+        db.session.commit()

@@ -13,3 +13,12 @@ class LoginAttemptEntity(db.Model):
     attemptedAt = db.Column(
         "attempted_at", db.DateTime, nullable=False, default=utcnow, index=True
     )
+
+    @classmethod
+    def recordAttempt(
+        cls, username: str, userId: int | None, success: bool
+    ) -> "LoginAttemptEntity":
+        attempt = cls(username=username.strip().lower()[:30], userId=userId, success=success)
+        db.session.add(attempt)
+        db.session.commit()
+        return attempt

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}User accounts · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section-head">
+      <h1 class="page-title">User accounts</h1>
+      <p>Create, update, suspend and unlock accounts. Every change is written to the audit log.</p>
+    </div>
+    <div class="toolbar">
+      <a class="button" href="{{ url_for('admin.account_new') }}">Create account</a>
+      <button class="button button--outline" type="button" disabled title="Coming soon">Export CSV</button>
+    </div>
+    <form class="filters filters--accounts" method="get" action="{{ url_for('admin.accounts') }}">
+      <div class="field">
+        <label for="keyword">Search</label>
+        <input id="keyword" name="keyword" value="{{ filters.keyword }}" placeholder="Username, name or email">
+      </div>
+      <div class="field">
+        <label for="profile">Profile</label>
+        <select id="profile" name="profile">
+          <option value="">All profiles</option>
+          {% for profile in profiles %}<option value="{{ profile.name }}"{% if filters.profile == profile.name %} selected{% endif %}>{{ profile.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="status">Status</label>
+        <select id="status" name="status">
+          <option value="">All statuses</option>
+          {% for status in statuses %}<option value="{{ status }}"{% if filters.status == status %} selected{% endif %}>{{ status }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="filters__actions">
+        <button class="button" type="submit">Search</button>
+        {% if pageArgs %}<a class="button button--outline" href="{{ url_for('admin.accounts') }}">Clear</a>{% endif %}
+      </div>
+    </form>
+
+    {% if accounts %}
+    <p class="result-count muted">{{ total }} account{{ '' if total == 1 else 's' }}</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr><th>Username</th><th>Name</th><th>Profile</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for account in accounts %}
+          <tr>
+            <td><a href="{{ url_for('admin.account_view', userId=account.userId) }}">{{ account.username }}</a></td>
+            <td>{{ account.name }}<br><span class="muted">{{ account.email }}</span></td>
+            <td>{{ account.profile.name }}</td>
+            <td>
+              <span class="badge{% if account.status == 'Active' %} badge--ok{% else %} badge--warn{% endif %}">{{ account.status }}</span>
+              {% if account.isLocked() %}<span class="badge badge--lock">Locked</span>{% endif %}
+            </td>
+            <td>
+              <div class="row-actions">
+                <a href="{{ url_for('admin.account_edit', userId=account.userId) }}">Edit</a>
+                {% if account.isLocked() %}
+                <form method="post" action="{{ url_for('admin.account_unlock', userId=account.userId) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+                  <button class="button button--small" type="submit">Unlock</button>
+                </form>
+                {% endif %}
+                {% if account.status == 'Active' and account.userId != g.current_account.userId %}
+                <form method="post" action="{{ url_for('admin.account_suspend', userId=account.userId) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+                  <button class="link-button" type="submit">Suspend</button>
+                </form>
+                {% elif account.status == 'Suspended' %}
+                <form method="post" action="{{ url_for('admin.account_reactivate', userId=account.userId) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+                  <button class="link-button" type="submit">Reactivate</button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if pages > 1 %}
+    <nav class="pager" aria-label="Pages">
+      {% if page > 1 %}<a class="button button--outline" rel="prev" href="{{ url_for('admin.accounts', page=page - 1, **pageArgs) }}">Previous</a>{% endif %}
+      <span class="muted">Page {{ page }} of {{ pages }}</span>
+      {% if page < pages %}<a class="button button--outline" rel="next" href="{{ url_for('admin.accounts', page=page + 1, **pageArgs) }}">Next</a>{% endif %}
+    </nav>
+    {% endif %}
+    {% else %}
+    <p class="empty">No accounts match your search.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

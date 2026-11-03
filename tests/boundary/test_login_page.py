@@ -67,3 +67,14 @@ def test_logged_in_user_visiting_login_goes_home(client, make_account, login):
 def test_role_home_greets_user_by_name(client, make_account, login):
     login(make_account(role="designer", name="Dana Tan").username)
     assert b"Dana Tan" in client.get("/designer/").data
+
+
+def test_login_page_shows_the_locked_message_after_five_failures(client, make_account):
+    account = make_account()
+    for _ in range(5):
+        client.post("/login", data={"username": account.username, "password": "nope"})
+    resp = client.post("/login", data={"username": account.username, "password": TEST_PASSWORD})
+    assert resp.status_code == 200
+    assert (
+        b"This account is locked. Try again later or contact an administrator." in resp.data
+    )
