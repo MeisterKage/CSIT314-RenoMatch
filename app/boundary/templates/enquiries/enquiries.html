@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Enquiries · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section-head">
+      <h1 class="page-title">{{ 'Enquiries from homeowners' if role == 'designer' else 'Your enquiries' }}</h1>
+      <p>{{ 'Open a conversation to read it and reply.' if role == 'designer' else 'Your conversations with designers. Open one to read the replies.' }}</p>
+    </div>
+    {% if enquiries %}
+    <ul class="threads">
+      {% for enquiry in enquiries %}
+      <li class="thread-row">
+        <a href="{{ url_for(threadEndpoint, enquiryId=enquiry.enquiryId) }}">
+          <strong>{{ enquiry.subject }}</strong>
+          <span class="muted">{{ enquiry.user.name if role == 'designer' else enquiry.designer.name }}{% if enquiry.idp %} · {{ enquiry.idp.title }}{% endif %}</span>
+          <span class="muted">{{ enquiry.messages|length }} message{{ '' if enquiry.messages|length == 1 else 's' }} · last {{ enquiry.lastMessage.sentAt.strftime('%d %b %Y, %H:%M') }}</span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% elif role == 'designer' %}
+    <p class="empty">No enquiries yet. They appear here when a homeowner asks about one of your projects.</p>
+    {% else %}
+    <p class="empty">You have not sent any enquiries. <a href="{{ url_for('browse.idps') }}">Browse designs</a> and ask a designer about one.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

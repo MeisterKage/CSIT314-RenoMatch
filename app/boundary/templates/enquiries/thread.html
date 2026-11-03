@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ enquiry.subject }} · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    {% set listEndpoint = 'enquiries.designer_enquiries' if role == 'designer' else 'enquiries.customer_enquiries' %}
+    <p class="crumbs"><a href="{{ url_for(listEndpoint) }}">&larr; All enquiries</a></p>
+    <h1 class="page-title">{{ enquiry.subject }}</h1>
+    <p class="muted">
+      {% if role == 'designer' %}From {{ enquiry.user.name }}{% else %}To {{ enquiry.designer.name }}{% endif %}
+      {% if enquiry.idp %} about <a href="{{ url_for('browse.idp_details', idpId=enquiry.idp.idpId) }}">{{ enquiry.idp.title }}</a>{% endif %}
+    </p>
+
+    <ul class="messages">
+      {% for message in enquiry.messages %}
+      <li class="message{% if message.senderId == g.current_account.userId %} message--mine{% endif %}">
+        <p class="message__head"><strong>{{ message.sender.name }}</strong>
+          <span class="muted">{{ message.sentAt.strftime('%d %b %Y, %H:%M') }}</span></p>
+        <p>{{ message.body }}</p>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <form class="reply-form" method="post" action="{{ request.path }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field">
+        <label for="body">Your reply</label>
+        <textarea id="body" name="body" rows="4" maxlength="2000" required></textarea>
+      </div>
+      <button class="button" type="submit">Send reply</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

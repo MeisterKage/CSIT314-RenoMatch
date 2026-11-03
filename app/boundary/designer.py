@@ -11,7 +11,11 @@ TOOLS = [
     Tool("Portfolio projects", "Add current and past projects with photos and budgets.", sprint=2),
     Tool("Project interest", "See how often each project is viewed and shortlisted.", sprint=3),
     Tool("Interest dashboard", "See which styles and categories draw the most interest.", sprint=5),
-    Tool("Enquiries", "Read and reply to homeowners' questions.", sprint=5),
+    Tool(
+        "Enquiries",
+        "Read and reply to homeowners' questions.",
+        endpoint="enquiries.designer_enquiries",
+    ),
     Tool("Weekly summary", "Get your views and shortlists by email each week.", sprint=5),
     CHANGE_PASSWORD,
 ]
