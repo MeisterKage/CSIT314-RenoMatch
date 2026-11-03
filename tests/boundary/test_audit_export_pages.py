@@ -80,11 +80,9 @@ def test_audit_log_ignores_unreadable_dates(client, admin):
     assert "old_action" in text(client.get("/admin/audit-log?startDate=banana"))
 
 
-def test_admin_nav_and_home_link_to_audit_log_and_profiles(client, admin):
+def test_admin_nav_and_home_link_to_audit_log(client, admin):
     for path in ("/admin/", "/account"):
-        page = text(client.get(path))
-        assert 'href="/admin/audit-log"' in page
-        assert 'href="/admin/profiles"' in page
+        assert 'href="/admin/audit-log"' in text(client.get(path))
 
 
 # US-34

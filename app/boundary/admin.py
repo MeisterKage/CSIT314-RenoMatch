@@ -1,5 +1,8 @@
+from datetime import datetime
+
 from flask import (
     Blueprint,
+    Response,
     abort,
     flash,
     g,
@@ -14,6 +17,7 @@ from app.boundary.auth_guard import role_required
 from app.boundary.role_tools import CHANGE_PASSWORD, Tool
 from app.control.create_user_account_controller import CreateUserAccountController
 from app.control.errors import ValidationError
+from app.control.export_user_accounts_controller import ExportUserAccountsController
 from app.control.reactivate_user_account_controller import ReactivateUserAccountController
 from app.control.search_user_accounts_controller import SearchUserAccountsController
 from app.control.suspend_user_account_controller import SuspendUserAccountController
@@ -31,12 +35,23 @@ TOOLS = [
         endpoint="admin.accounts",
     ),
     Tool("User profiles", "Group accounts by role and suspend a whole role at once.", sprint=1),
-    Tool("Audit log", "See which admin changed which account, and when.", sprint=4),
+    Tool(
+        "Audit log",
+        "See which admin changed which account, and when.",
+        sprint=4,
+        endpoint="audit_log.audit_log",
+    ),
     Tool("Failed logins", "Spot repeated failed logins and unlock genuine users.", sprint=4),
-    Tool("Export accounts", "Download the account list as a CSV file.", sprint=4),
+    Tool(
+        "Export accounts",
+        "Download the account list as a CSV file.",
+        sprint=4,
+        endpoint="admin.accounts",
+    ),
     CHANGE_PASSWORD,
 ]
 
+NO_ACCOUNTS_TO_EXPORT = "No accounts to export."
 PAGE_SIZE = 25
 STATUS_FILTERS = ("Active", "Suspended")
 
@@ -58,13 +73,19 @@ def safeNext(default: str) -> str:
 
 class ManageUserAccountsPage(MethodView):
     """Boundary for US-21 (view), US-23 (suspend), US-24 (reactivate), US-25 (search) and
-    US-33 (unlock). The Export CSV button is a placeholder until US-34 is wired up. The
-    `controller` attribute of the US-34 class diagram (ExportUserAccountsController) is left
-    free for that use case, so the controllers here use their own attribute names."""
+    US-33 (unlock), and for US-34 (export CSV). `controller` is the US-34 class diagram's
+    ExportUserAccountsController, so the other controllers use their own attribute names.
+    `displayMessage` takes no argument, as in the US-34 class diagram, so what it shows is
+    held in `message`, `category` and `nextUrl`. `csvFile` holds the file for `downloadCSV`."""
 
     decorators = [role_required("admin")]
 
     def __init__(self):
+        self.controller = ExportUserAccountsController()
+        self.message = None
+        self.category = "success"
+        self.nextUrl = None
+        self.csvFile = None
         self.searchController = SearchUserAccountsController()
         self.viewController = ViewUserAccountController()
         self.suspendController = SuspendUserAccountController()
@@ -72,6 +93,8 @@ class ManageUserAccountsPage(MethodView):
         self.unlockController = UnlockUserAccountController()
 
     def get(self, userId=None):
+        if request.endpoint == "admin.accounts_export":
+            return self.exportAccounts()
         if userId is None:
             return self.displayAccounts()
         return self.displayAccount(userId)
@@ -91,15 +114,45 @@ class ManageUserAccountsPage(MethodView):
         try:
             actions[endpoint](userId, g.current_account.userId)
         except ValidationError as error:
-            return self.displayMessage(str(error), "danger")
-        return self.displayMessage(messages[endpoint], "success")
+            self.message, self.category = str(error), "danger"
+            return self.displayMessage()
+        self.message, self.category = messages[endpoint], "success"
+        return self.displayMessage()
 
-    def displayAccounts(self):
+    def exportAccounts(self):
+        """US-34 step 1: click "Export CSV", which sends the current search filters."""
+        keyword, profile, status = self.searchFilters()
+        self.csvFile = self.controller.exportUserAccountsCSV(keyword, profile, status)  # 1.1
+        if self.csvFile:  # [accounts not empty]
+            return self.downloadCSV()  # 1.2
+        self.message, self.category = NO_ACCOUNTS_TO_EXPORT, "info"  # [3a. no accounts found]
+        self.nextUrl = url_for("admin.accounts", **self.filterArgs(keyword, profile, status))
+        return self.displayMessage()  # 1.3
+
+    def downloadCSV(self):
+        filename = f"user_accounts_{datetime.now().strftime('%Y-%m-%d')}.csv"
+        return Response(
+            self.csvFile,
+            mimetype="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+
+    @staticmethod
+    def searchFilters():
         keyword = request.args.get("keyword", "").strip()
         profile = request.args.get("profile", "").strip()
         status = request.args.get("status", "").strip()
         if status not in STATUS_FILTERS:
             status = ""
+        return keyword, profile, status
+
+    @staticmethod
+    def filterArgs(keyword, profile, status):
+        filters = {"keyword": keyword, "profile": profile, "status": status}
+        return {key: value for key, value in filters.items() if value}
+
+    def displayAccounts(self):
+        keyword, profile, status = self.searchFilters()
         accounts = self.searchController.searchUserAccounts(keyword, profile, status)
         try:
             page = max(1, int(request.args.get("page", "1")))
@@ -115,7 +168,7 @@ class ManageUserAccountsPage(MethodView):
             page=page,
             pages=pages,
             filters=filters,
-            pageArgs={key: value for key, value in filters.items() if value},
+            pageArgs=self.filterArgs(keyword, profile, status),
             profiles=self.searchController.getProfiles(),
             statuses=STATUS_FILTERS,
         )
@@ -126,9 +179,9 @@ class ManageUserAccountsPage(MethodView):
             abort(404)
         return render_template("admin/account_view.html", account=account)
 
-    def displayMessage(self, message, category):
-        flash(message, category)
-        return redirect(safeNext(url_for("admin.accounts")))
+    def displayMessage(self):
+        flash(self.message, self.category)
+        return redirect(self.nextUrl or safeNext(url_for("admin.accounts")))
 
 
 class UserAccountFormPage(MethodView):
@@ -212,6 +265,7 @@ class UserAccountFormPage(MethodView):
 
 bp.add_url_rule("/", view_func=AdminHomePage.as_view("home"))
 bp.add_url_rule("/accounts", view_func=ManageUserAccountsPage.as_view("accounts"))
+bp.add_url_rule("/accounts/export", view_func=ManageUserAccountsPage.as_view("accounts_export"))
 bp.add_url_rule(
     "/accounts/new", view_func=UserAccountFormPage.as_view("account_new"), methods=["GET", "POST"]
 )

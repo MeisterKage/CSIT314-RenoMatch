@@ -7,7 +7,8 @@
   <a href="{{ url_for('enquiries.customer_enquiries') }}">Enquiries</a>
   <a href="{{ url_for('compare.compare') }}">Compare ({{ compareCount }})</a>{% endif %}
   {% if g.current_account.role == 'designer' %}<a href="{{ url_for('enquiries.designer_enquiries') }}">Enquiries</a>{% endif %}
-  {% if g.current_account.role == 'admin' %}<a href="{{ url_for('admin.accounts') }}">Accounts</a>{% endif %}
+  {% if g.current_account.role == 'admin' %}<a href="{{ url_for('admin.accounts') }}">Accounts</a>
+  <a href="{{ url_for('audit_log.audit_log') }}">Audit log</a>{% endif %}
   <a href="{{ url_for(ROLE_HOME[g.current_account.role]) }}">Home</a>
   <a href="{{ url_for('account.account') }}">Account</a>
   <form method="post" action="{{ url_for('auth.logout') }}">

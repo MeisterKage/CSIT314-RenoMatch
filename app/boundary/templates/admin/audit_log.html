@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Audit log · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section-head">
+      <h1 class="page-title">Audit log</h1>
+      <p>Every change an admin makes to an account or profile. Entries cannot be edited.</p>
+    </div>
+    <form class="filters filters--audit" method="get" action="{{ url_for('audit_log.audit_log') }}">
+      <div class="field">
+        <label for="startDate">From</label>
+        <input id="startDate" name="startDate" type="date" value="{{ filters.startDate }}">
+      </div>
+      <div class="field">
+        <label for="endDate">To</label>
+        <input id="endDate" name="endDate" type="date" value="{{ filters.endDate }}">
+      </div>
+      <div class="filters__actions">
+        <button class="button" type="submit">Show</button>
+        {% if filters.startDate or filters.endDate %}<a class="button button--outline" href="{{ url_for('audit_log.audit_log') }}">Clear</a>{% endif %}
+      </div>
+    </form>
+    {% if message %}
+    <p class="{{ 'flash flash--danger' if isError else 'empty' }}"{% if isError %} role="alert"{% endif %}>{{ message }}</p>
+    {% else %}
+    <p class="result-count muted">{{ logs|length }} entr{{ 'y' if logs|length == 1 else 'ies' }}</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr><th>Date and time</th><th>Admin</th><th>Action</th><th>Target</th></tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td>{{ log.timestamp.strftime('%d %b %Y, %H:%M') }}</td>
+            <td>{{ log.admin.name }}</td>
+            <td>{{ log.action }}{% if log.details %}<br><span class="muted">{{ log.details }}</span>{% endif %}</td>
+            <td>{{ log.targetType }} #{{ log.targetId }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

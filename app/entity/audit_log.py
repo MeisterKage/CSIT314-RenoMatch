@@ -1,3 +1,5 @@
+from datetime import datetime, time, timedelta
+
 from sqlalchemy import event
 
 from app.entity.db import db, utcnow
@@ -35,6 +37,19 @@ class AuditLogEntity(db.Model):
         db.session.add(row)
         db.session.commit()
         return row
+
+    @classmethod
+    def getAuditLogs(cls, startDate, endDate) -> list["AuditLogEntity"]:
+        """US-32 1.1.1: the audit rows from the start of startDate up to the end of endDate,
+        newest first. A date left as None is not a limit, so no dates returns every row."""
+        query = cls.query
+        if startDate is not None:
+            query = query.filter(cls.timestamp >= datetime.combine(startDate, time.min))
+        if endDate is not None:
+            query = query.filter(
+                cls.timestamp < datetime.combine(endDate, time.min) + timedelta(days=1)
+            )
+        return query.order_by(cls.timestamp.desc(), cls.logId.desc()).all()
 
 
 @event.listens_for(AuditLogEntity, "before_update")

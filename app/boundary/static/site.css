@@ -1226,6 +1226,10 @@ fieldset {
   grid-template-columns: 2fr 1fr 1fr auto;
 }
 
+.filters--audit {
+  grid-template-columns: 1fr 1fr auto;
+}
+
 .button--small {
   padding: 0.35rem 0.9rem;
   font-size: 0.875rem;
@@ -1323,7 +1327,8 @@ fieldset {
 }
 
 @media (max-width: 44rem) {
-  .filters--accounts {
+  .filters--accounts,
+  .filters--audit {
     grid-template-columns: 1fr;
   }
 }
