@@ -25,7 +25,7 @@ import pytest
 
 import app as app_package
 
-CONFORMING_USE_CASES: list[str] = []
+CONFORMING_USE_CASES: list[str] = ["US-19"]
 
 USE_CASES_DIR = Path(__file__).resolve().parent.parent / "docs" / "design" / "use-cases"
 ALL_USE_CASES = sorted(path.name for path in USE_CASES_DIR.glob("US-*") if path.is_dir())
