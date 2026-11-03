@@ -25,7 +25,7 @@ import pytest
 
 import app as app_package
 
-CONFORMING_USE_CASES: list[str] = ["US-19"]
+CONFORMING_USE_CASES: list[str] = ["US-12", "US-13", "US-19"]
 
 # Where a class diagram and its sequence diagram disagree, the sequence diagram wins. Each
 # entry names one method (use case, class, method) and the extra parameters, in order, that
