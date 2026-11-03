@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import date, timedelta
 
 from sqlalchemy import func, or_, select, update
 
@@ -167,6 +167,26 @@ class IDPEntity(db.Model):
             .limit(FEATURED_LIMIT)
             .all()
         )
+
+    @classmethod
+    def countFeaturedIDPs(cls) -> int:
+        """US-60 step 1.1.1: how many Active IDPs are featured."""
+        return db.session.query(cls).filter_by(status="Active", isFeatured=True).count()
+
+    @classmethod
+    def setFeatured(cls, idpId: int, featured: bool) -> bool:
+        """US-60 steps 1.1.2 and 2.1.1: feature or unfeature an Active IDP.
+
+        Returns False and changes nothing when the IDP does not exist or is not Active (5a).
+        Featuring sets featuredDate to today. Unfeaturing clears it.
+        """
+        record = db.session.get(cls, idpId)
+        if record is None or record.status != "Active":
+            return False
+        record.isFeatured = featured
+        record.featuredDate = date.today() if featured else None
+        db.session.commit()
+        return True
 
     @classmethod
     def getRecommendedIDPs(cls, userId: int) -> "list[IDPEntity] | None":

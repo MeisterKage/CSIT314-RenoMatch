@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Reported projects · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section-head">
+      <h1 class="page-title">Reported projects</h1>
+      <p>Uphold a report to remove the project from the site, or dismiss it to keep the project.</p>
+    </div>
+    {% if reports %}
+    <p class="result-count muted">{{ reports|length }} open report{{ '' if reports|length == 1 else 's' }}</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Project</th><th>Reason</th><th>Reported</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for report in reports %}
+          <tr>
+            <td>{{ report.idp.title }}<br><span class="muted">{{ report.idp.designer.name }} · {{ report.idp.status }}</span></td>
+            <td>{{ report.reason }}</td>
+            <td>{{ report.createdAt.strftime('%d %b %Y') }}</td>
+            <td>
+              <div class="row-actions">
+                <form method="post" action="{{ url_for('moderation.reported_uphold', flagId=report.flagId) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="button button--small" type="submit">Uphold</button>
+                </form>
+                <form method="post" action="{{ url_for('moderation.reported_dismiss', flagId=report.flagId) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="button button--outline button--small" type="submit">Dismiss</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="empty">No reported projects to review.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

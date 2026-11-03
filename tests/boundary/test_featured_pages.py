@@ -4,7 +4,7 @@ import re
 
 import pytest
 
-from app.boundary.platform import ManageFeaturedIDPsPage
+from app.boundary.moderation import ManageFeaturedIDPsPage
 from app.control.feature_idp_controller import FeatureIDPController
 from app.entity import IDPEntity, db
 

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Featured projects · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section-head">
+      <h1 class="page-title">Featured projects</h1>
+      <p>Up to {{ slots }} projects appear under "Featured Designs" on the home page.</p>
+    </div>
+
+    <h2>Home page slots ({{ featured|length }} of {{ slots }} used)</h2>
+    <ul class="style-grid">
+      {% for idp in featured %}
+      <li class="idp-card">
+        {% if idp.photoUrls %}
+          <img src="{{ idp.photoUrls[0] }}" alt="{{ idp.title }}" loading="lazy" width="900" height="675">
+        {% else %}
+          <div class="idp-card__empty" role="img" aria-label="No photo yet"></div>
+        {% endif %}
+        <h3>{{ idp.title }}</h3>
+        <p>{{ idp.style }} · {{ idp.location }}</p>
+        <form method="post" action="{{ url_for('moderation.featured_unfeature', idpId=idp.idpId) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="button button--outline button--small" type="submit">Unfeature</button>
+        </form>
+      </li>
+      {% endfor %}
+      {% for _ in range(slots - featured|length) %}
+      <li class="idp-card"><div class="idp-card__empty" role="img" aria-label="Open slot"></div><h3>Open slot</h3></li>
+      {% endfor %}
+    </ul>
+
+    <h2>Active projects</h2>
+    <form class="filters" method="get" action="{{ url_for('moderation.featured') }}">
+      <div class="field filters__wide">
+        <label for="keyword">Search projects</label>
+        <input id="keyword" name="keyword" value="{{ keyword }}" placeholder="Title or description">
+      </div>
+      <div class="filters__actions">
+        <button class="button" type="submit">Search</button>
+        {% if keyword %}<a class="button button--outline" href="{{ url_for('moderation.featured') }}">Clear</a>{% endif %}
+      </div>
+    </form>
+
+    {% if pagination.items %}
+    <p class="result-count muted">{{ pagination.total }} project{{ '' if pagination.total == 1 else 's' }}</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Project</th><th>Designer</th><th>Featured</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for idp in pagination.items %}
+          <tr>
+            <td>{{ idp.title }}<br><span class="muted">{{ idp.style }} · {{ idp.propertyType }}</span></td>
+            <td>{{ idp.designer.name }}</td>
+            <td>{% if idp.isFeatured %}<span class="badge badge--ok">Featured</span>{% else %}<span class="muted">No</span>{% endif %}</td>
+            <td>
+              <form method="post" action="{{ url_for('moderation.featured_unfeature' if idp.isFeatured else 'moderation.featured_feature', idpId=idp.idpId) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+                <button class="button button--small{% if idp.isFeatured %} button--outline{% endif %}" type="submit">{{ 'Unfeature' if idp.isFeatured else 'Feature' }}</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if pagination.pages > 1 %}
+    <nav class="pager" aria-label="Pages">
+      {% if pagination.page > 1 %}<a class="button button--outline" rel="prev" href="{{ url_for('moderation.featured', page=pagination.page - 1, **pageArgs) }}">Previous</a>{% endif %}
+      <span class="muted">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+      {% if pagination.page < pagination.pages %}<a class="button button--outline" rel="next" href="{{ url_for('moderation.featured', page=pagination.page + 1, **pageArgs) }}">Next</a>{% endif %}
+    </nav>
+    {% endif %}
+    {% else %}
+    <p class="empty">No active projects match your search.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
