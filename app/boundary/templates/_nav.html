@@ -10,7 +10,9 @@
   <a href="{{ url_for('interest.dashboard') }}">Dashboard</a>
   <a href="{{ url_for('company_info.company') }}">Company</a>
   <a href="{{ url_for('enquiries.designer_enquiries') }}">Enquiries</a>{% endif %}
-  {% if g.current_account.role == 'platform' %}<a href="{{ url_for('moderation.featured') }}">Featured</a>
+  {% if g.current_account.role == 'platform' %}<a href="{{ url_for('categories.categories') }}">Categories</a>
+  <a href="{{ url_for('reports.reports') }}">Reports</a>
+  <a href="{{ url_for('moderation.featured') }}">Featured</a>
   <a href="{{ url_for('moderation.reported') }}">Reported</a>{% endif %}
   {% if g.current_account.role == 'admin' %}<a href="{{ url_for('admin.accounts') }}">Accounts</a>
   <a href="{{ url_for('admin.profiles') }}">Profiles</a>

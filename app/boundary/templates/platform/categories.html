@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Categories · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section-head">
+      <h1 class="page-title">Categories</h1>
+      <p>Categories group design projects. A suspended category is hidden from the browse filters and from the Add IDP list.</p>
+    </div>
+    <div class="toolbar">
+      <a class="button" href="{{ url_for('categories.category_new') }}">Create category</a>
+    </div>
+    <form class="filters filters--audit" method="get" action="{{ url_for('categories.categories') }}">
+      <div class="field">
+        <label for="keyword">Search</label>
+        <input id="keyword" name="keyword" value="{{ filters.keyword }}" placeholder="Category name">
+      </div>
+      <div class="field">
+        <label for="status">Status</label>
+        <select id="status" name="status">
+          <option value="">All statuses</option>
+          {% for status in statuses %}<option value="{{ status }}"{% if filters.status == status %} selected{% endif %}>{{ status }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="filters__actions">
+        <button class="button" type="submit">Search</button>
+        {% if filters.keyword or filters.status %}<a class="button button--outline" href="{{ url_for('categories.categories') }}">Clear</a>{% endif %}
+      </div>
+    </form>
+
+    {% if message %}
+    <p class="empty">{{ message }}</p>
+    {% else %}
+    <p class="result-count muted">{{ categories|length }} categor{{ 'y' if categories|length == 1 else 'ies' }}</p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr><th>Name</th><th>Status</th><th>IDPs</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for category in categories %}
+          <tr>
+            <td><a href="{{ url_for('categories.category_view', categoryId=category.categoryId) }}">{{ category.name }}</a>{% if category.description %}<br><span class="muted">{{ category.description }}</span>{% endif %}</td>
+            <td><span class="badge{% if category.status == 'Active' %} badge--ok{% else %} badge--warn{% endif %}">{{ category.status }}</span></td>
+            <td>{{ category.idpCount }}</td>
+            <td>
+              <div class="row-actions">
+                <a href="{{ url_for('categories.category_edit', categoryId=category.categoryId) }}">Edit</a>
+                {% if category.status == 'Active' %}
+                <form method="post" action="{{ url_for('categories.category_suspend', categoryId=category.categoryId) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+                  <button class="link-button" type="submit">Suspend</button>
+                </form>
+                {% else %}
+                <form method="post" action="{{ url_for('categories.category_reactivate', categoryId=category.categoryId) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+                  <button class="link-button" type="submit">Reactivate</button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

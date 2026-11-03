@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ category.name }} · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="section section--tight">
+  <div class="wrap">
+    <p class="crumbs"><a href="{{ url_for('categories.categories') }}">Back to categories</a></p>
+    <h1 class="page-title">{{ category.name }}</h1>
+    <p><span class="badge{% if category.status == 'Active' %} badge--ok{% else %} badge--warn{% endif %}">{{ category.status }}</span></p>
+    <dl class="details">
+      <div><dt>Description</dt><dd>{{ category.description or 'Not given' }}</dd></div>
+      <div><dt>Active IDPs</dt><dd>{{ category.idpCount }}</dd></div>
+    </dl>
+    <div class="toolbar">
+      <a class="button" href="{{ url_for('categories.category_edit', categoryId=category.categoryId) }}">Edit category</a>
+      {% if category.status == 'Active' %}
+      <form method="post" action="{{ url_for('categories.category_suspend', categoryId=category.categoryId) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next" value="{{ url_for('categories.category_view', categoryId=category.categoryId) }}">
+        <button class="button button--outline" type="submit">Suspend</button>
+      </form>
+      {% else %}
+      <form method="post" action="{{ url_for('categories.category_reactivate', categoryId=category.categoryId) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next" value="{{ url_for('categories.category_view', categoryId=category.categoryId) }}">
+        <button class="button button--outline" type="submit">Reactivate</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
