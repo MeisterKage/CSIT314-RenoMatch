@@ -8,7 +8,6 @@
   <div class="wrap">
     <div class="section-head">
       <h1 class="page-title">Activity reports</h1>
-      <p>Platform activity for a day, a month or a date range, compared with the period before it.</p>
     </div>
     <nav class="tabs" aria-label="Report type">
       <a href="{{ url_for('reports.reports', type='daily') }}"{% if reportType == 'daily' %} aria-current="page"{% endif %}>Daily</a>

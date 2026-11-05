@@ -357,14 +357,6 @@ main {
   margin-top: 0.4rem;
 }
 
-.footer-note {
-  margin: 2.5rem 0 0;
-  padding-top: 1.5rem;
-  border-top: 1px solid #33383b;
-  font-size: 0.8125rem;
-  max-width: none;
-}
-
 /* Home: hero ------------------------------------------------------------ */
 
 .hero {
@@ -1071,6 +1063,34 @@ fieldset {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+}
+
+/* Login prompt ---------------------------------------------------------- */
+
+.login-prompt {
+  width: min(26rem, calc(100vw - 2rem));
+  padding: 2rem;
+  border: 0;
+  border-radius: var(--radius);
+  color: var(--charcoal);
+}
+
+.login-prompt::backdrop {
+  background: rgba(20, 23, 25, 0.55);
+}
+
+.login-prompt h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.login-prompt p {
+  color: var(--stone);
+  margin-bottom: 1.5rem;
+}
+
+.login-prompt form {
+  margin-top: 1rem;
 }
 
 /* Small screens --------------------------------------------------------- */
