@@ -49,11 +49,10 @@ def test_role_home_lists_every_tool_as_a_link(client, make_account, login, role,
     assert b"Coming" not in page and b"sprint" not in page.lower()
     for tool in tools:
         assert tool in page
-    assert page.count(b'class="tool tool--available"') == page.count(b'<li class="tool ')
+    assert b"Available" not in page
 
 
 def test_role_home_links_to_change_password(client, make_account, login):
     login(make_account(role="customer").username)
     page = client.get("/customer/").data
     assert b'href="/account/password"' in page
-    assert b"Available" in page

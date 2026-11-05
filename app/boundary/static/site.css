@@ -293,7 +293,8 @@ main {
 }
 
 .page {
-  padding: 3rem 0 5rem;
+  padding-top: 3rem;
+  padding-bottom: 5rem;
 }
 
 .flash {
@@ -529,7 +530,8 @@ main {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 4rem;
   align-items: start;
-  padding: 3.5rem 0 5rem;
+  padding-top: 3.5rem;
+  padding-bottom: 5rem;
 }
 
 .auth__form {
@@ -721,30 +723,11 @@ fieldset {
   font-size: 0.9375rem;
 }
 
-.tool__status {
-  align-self: flex-start;
-  margin-top: 0.75rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--pill);
-  background: var(--white);
-  color: var(--stone);
-  font-size: 0.8125rem;
-  font-weight: 600;
-}
-
-.tool--available {
-  background: var(--sage-tint);
-}
-
-.tool--available .tool__status {
-  background: var(--sage);
-  color: var(--white);
-}
-
 /* Browse designs ------------------------------------------------------- */
 
 .section--tight {
-  padding: 3rem 0 5rem;
+  padding-top: 3rem;
+  padding-bottom: 5rem;
 }
 
 .page-title {

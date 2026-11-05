@@ -8,10 +8,9 @@
   </header>
   <ul class="tools">
     {% for tool in tools %}
-    <li class="tool tool--available">
+    <li class="tool">
       <h3><a href="{{ url_for(tool.endpoint) }}">{{ tool.name }}</a></h3>
       <p>{{ tool.description }}</p>
-      <span class="tool__status">Available</span>
     </li>
     {% endfor %}
   </ul>
