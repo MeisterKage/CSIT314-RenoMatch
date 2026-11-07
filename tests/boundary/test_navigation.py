@@ -5,9 +5,9 @@ import re
 import pytest
 
 NAV_LINKS = {
-    "customer": ["Browse", "Favourites", "Compare (0)", "Enquiries"],
+    "customer": ["Browse", "Favourites", "Compare", "Enquiries"],
     "designer": ["Portfolio", "Dashboard", "Enquiries", "Company"],
-    "admin": ["Accounts", "Profiles", "Audit log"],
+    "admin": ["Accounts", "Profiles", "Audit Log"],
     "platform": ["Categories", "Reports", "Reported", "Featured"],
 }
 HOMES = {

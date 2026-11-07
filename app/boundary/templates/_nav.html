@@ -11,7 +11,7 @@
       {% if role == 'customer' %}
       <a href="{{ url_for('browse.idps') }}">Browse</a>
       <a href="{{ url_for('favourites.favourites') }}">Favourites</a>
-      <a href="{{ url_for('compare.compare') }}">Compare ({{ compareCount }})</a>
+      <a href="{{ url_for('compare.compare') }}">Compare{% if compareCount %}<span class="nav-count" aria-label="{{ compareCount }} selected">{{ compareCount }}</span>{% endif %}</a>
       <a href="{{ url_for('enquiries.customer_enquiries') }}">Enquiries</a>
       {% elif role == 'designer' %}
       <a href="{{ url_for('portfolio.portfolio') }}">Portfolio</a>
@@ -21,7 +21,7 @@
       {% elif role == 'admin' %}
       <a href="{{ url_for('admin.accounts') }}">Accounts</a>
       <a href="{{ url_for('admin.profiles') }}">Profiles</a>
-      <a href="{{ url_for('audit_log.audit_log') }}">Audit log</a>
+      <a href="{{ url_for('audit_log.audit_log') }}">Audit Log</a>
       {% elif role == 'platform' %}
       <a href="{{ url_for('categories.categories') }}">Categories</a>
       <a href="{{ url_for('reports.reports') }}">Reports</a>

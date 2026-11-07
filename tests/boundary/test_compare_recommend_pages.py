@@ -116,9 +116,11 @@ def test_unavailable_idp_shows_the_rest_and_the_3a_message(signedIn, client, mak
 
 def test_nav_shows_compare_count_for_customers(client, make_idp, make_account, login):
     customer(make_account, login)
-    assert "Compare (0)" in client.get("/compare").data.decode()
+    assert ">Compare</a>" in client.get("/compare").data.decode()
     select(client, make_idp(), make_idp())
-    assert "Compare (2)" in client.get("/compare").data.decode()
+    assert ">Compare<span class=\"nav-count\" aria-label=\"2 selected\">2</span></a>" in client.get(
+        "/compare"
+    ).data.decode()
 
 
 # US-12

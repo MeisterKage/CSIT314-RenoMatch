@@ -72,12 +72,12 @@ def test_designer_can_still_reach_every_former_home_tool(client, make_account, l
     assert b'href="/account/password"' in account_page
 
 
-def test_compare_needs_only_the_add_to_compare_button(client, make_account, make_idp, login):
+def test_compare_needs_only_the_compare_button(client, make_account, make_idp, login):
     idp = make_idp()
     login(make_account(role="customer").username)
     page = client.get(f"/idps/{idp.idpId}").data
     assert b'type="checkbox"' not in page
-    assert b"Add to compare" in page
+    assert b">Compare</button>" in page
     assert f'type="hidden" name="idpId" value="{idp.idpId}"'.encode() in page
 
 

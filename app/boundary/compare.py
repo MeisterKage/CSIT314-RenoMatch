@@ -35,7 +35,7 @@ def injectCompareCount():
 class CompareIDPPage(MethodView):
     """Boundary for US-13. The selection of up to 3 IDP ids is kept in the session.
 
-    `post` on /compare/select is sequence step 1 (tick "Compare" on an IDP), with
+    `post` on /compare/select is sequence step 1 (the "Compare" button on an IDP), with
     1.1 displayMessage() when 3 are already selected (opt 1a). `get` on /compare is step 2
     (click "Compare"): 2.1 compareIDPs, then 2.2 displayComparison, or 2.4 displayMessage
     (alt 2a), and 2.3 displayMessage when a selected IDP is no longer available (opt 3a).
