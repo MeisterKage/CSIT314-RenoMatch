@@ -16,7 +16,7 @@ UNAVAILABLE = "One IDP is no longer available"
 
 
 def backTo() -> str:
-    """The page the user ticked from (path only), else the comparison page."""
+    """The page the user clicked from (path only), else the comparison page."""
     path = urlparse(request.referrer or "").path
     if path.startswith("/") and not path.startswith("//") and "\\" not in path:
         return path
@@ -35,7 +35,7 @@ def injectCompareCount():
 class CompareIDPPage(MethodView):
     """Boundary for US-13. The selection of up to 3 IDP ids is kept in the session.
 
-    `post` on /compare/select is sequence step 1 (the "Compare" button on an IDP), with
+    `post` on /compare/select is sequence step 1 (click "Compare" on an IDP), with
     1.1 displayMessage() when 3 are already selected (opt 1a). `get` on /compare is step 2
     (click "Compare"): 2.1 compareIDPs, then 2.2 displayComparison, or 2.4 displayMessage
     (alt 2a), and 2.3 displayMessage when a selected IDP is no longer available (opt 3a).
@@ -90,7 +90,7 @@ class CompareIDPPage(MethodView):
         table and then the 3a message is drawn a single time."""
 
     def displayMessage(self):
-        """1.1, 2.3 and 2.4: `message`. After a tick `post` flashes it on the page the user
+        """1.1, 2.3 and 2.4: `message`. After a click `post` flashes it on the page the user
         was on. On the comparison page it is drawn with the table, if there is one."""
 
     def render(self):
