@@ -46,7 +46,7 @@ TOOLS = [
         endpoint="admin.profiles",
     ),
     Tool(
-        "Audit log",
+        "Audit Log",
         "See which admin changed which account, and when.",
         endpoint="audit_log.audit_log",
     ),

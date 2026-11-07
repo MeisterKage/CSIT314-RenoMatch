@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Audit log · {{ config.SITE_NAME }}{% endblock %}
+{% block title %}Audit Log · {{ config.SITE_NAME }}{% endblock %}
 {% block content %}
 <section class="section section--tight">
   <div class="wrap">
     <div class="section-head">
-      <h1 class="page-title">Audit log</h1>
+      <h1 class="page-title">Audit Log</h1>
     </div>
     <form class="filters filters--audit" method="get" action="{{ url_for('audit_log.audit_log') }}">
       <div class="field">

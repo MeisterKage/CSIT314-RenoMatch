@@ -38,11 +38,11 @@
         <form class="compare-form" method="post" action="/compare/select">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="idpId" value="{{ idp.idpId }}">
-          <button class="button button--outline button--full" type="submit">Add to compare</button>
+          <button class="button button--outline button--full" type="submit">Compare</button>
         </form>
         {% elif not g.current_account %}
         {# Visitors must log in to compare. Without JavaScript this is a plain link to the login page. #}
-        <a class="button button--outline button--full" href="{{ url_for('auth.login') }}" data-login-prompt>Add to compare</a>
+        <a class="button button--outline button--full" href="{{ url_for('auth.login') }}" data-login-prompt>Compare</a>
         <dialog class="login-prompt" id="login-prompt" aria-labelledby="login-prompt-title">
           <h2 id="login-prompt-title">Log in to compare designs</h2>
           <p>You need an account to compare designs side by side.</p>
