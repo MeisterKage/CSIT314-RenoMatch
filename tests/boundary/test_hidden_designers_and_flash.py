@@ -40,6 +40,13 @@ def test_featured_limit_counts_featured_idps_of_hidden_designers(make_idp):
     assert IDPEntity.countFeaturedIDPs() == 1
 
 
+def test_manager_still_sees_a_featured_idp_of_a_hidden_designer(client, make_account, make_idp, login):
+    idp = make_idp(isFeatured=True)
+    suspend_profile(idp)
+    login(make_account(role="platform").username)
+    assert idp.title.encode() in client.get("/platform/featured").data
+
+
 def test_my_idp_search_treats_percent_as_a_plain_character(make_account, make_idp):
     designer = make_account(role="designer")
     make_idp(designer=designer, title="Kitchen")

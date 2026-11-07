@@ -51,11 +51,14 @@ def test_visitor_cannot_use_compare_without_logging_in(client, make_idp):
         ("platform", "/platform/"),
     ],
 )
-def test_nav_has_no_user_name_and_no_home_tab(client, make_account, login, role, home):
+def test_nav_shows_account_name_beside_log_out_and_no_home_tab(
+    client, make_account, login, role, home
+):
     login(make_account(role=role, name="Dana Tan").username)
     nav = nav_of(client.get(home).data)
-    assert "Dana Tan" not in nav
+    assert ">Account<" not in nav
     assert ">Home<" not in nav
+    assert re.search(r'href="/account/?"[^>]*>\s*Dana Tan\s*</a>\s*<form[^>]*logout', nav)
 
 
 def test_footer_has_no_project_note(client):
