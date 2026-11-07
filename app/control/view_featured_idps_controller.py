@@ -8,7 +8,7 @@ class ViewFeaturedIDPsController:
         self.entity = IDPEntity
 
     def getFeaturedIDPs(self):
-        return self.entity.getFeaturedIDPs()
+        return self.entity.getFeaturedSlots()
 
     def searchActiveIDPs(self, keyword, page):
         return self.entity.searchIDPs(keyword, None, None, None, None, None, page)

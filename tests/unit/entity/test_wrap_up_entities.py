@@ -61,7 +61,7 @@ def test_hidden_designer_idp_is_not_public(hidden_idp, make_idp, make_account):
     assert IDPEntity.compareIDPs([hidden_idp.idpId]) == []
     assert IDPEntity.getPopularIDPs() == []
     assert IDPEntity.getFeaturedIDPs() == []
-    assert IDPEntity.countFeaturedIDPs() == 0
+    assert IDPEntity.countFeaturedIDPs() == 1  # it keeps its slot until unfeatured
 
 
 def test_hidden_designer_idp_is_not_recommended(hidden_idp, make_idp, make_account):

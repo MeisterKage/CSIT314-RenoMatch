@@ -153,6 +153,13 @@ a {
   align-items: center;
   gap: 1.75rem;
   flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.site-nav .nav-account {
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .site-nav a,
@@ -295,6 +302,10 @@ main {
 .page {
   padding-top: 3rem;
   padding-bottom: 5rem;
+}
+
+.flash-stack {
+  padding-bottom: 1.5rem;
 }
 
 .flash {

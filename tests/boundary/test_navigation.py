@@ -5,10 +5,10 @@ import re
 import pytest
 
 NAV_LINKS = {
-    "customer": ["Browse", "Favourites", "Compare (0)", "Enquiries", "Account"],
-    "designer": ["Portfolio", "Dashboard", "Enquiries", "Company", "Account"],
-    "admin": ["Accounts", "Profiles", "Audit log", "Account"],
-    "platform": ["Categories", "Reports", "Reported", "Featured", "Account"],
+    "customer": ["Browse", "Favourites", "Compare (0)", "Enquiries"],
+    "designer": ["Portfolio", "Dashboard", "Enquiries", "Company"],
+    "admin": ["Accounts", "Profiles", "Audit log"],
+    "platform": ["Categories", "Reports", "Reported", "Featured"],
 }
 HOMES = {
     "customer": "/",
@@ -33,10 +33,12 @@ def paths(page, pattern):
 
 @pytest.mark.parametrize("role", NAV_LINKS)
 def test_nav_links_per_role_are_concise(client, make_account, login, role):
-    login(make_account(role=role).username)
+    account = make_account(role=role)
+    login(account.username)
     labels = navLabels(client.get(HOMES[role]).get_data(as_text=True))
     for label in NAV_LINKS[role]:
         assert label in labels
+    assert account.name in labels
     assert "Log in" not in labels and "Create account" not in labels
 
 

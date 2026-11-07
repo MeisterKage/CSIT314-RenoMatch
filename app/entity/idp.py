@@ -30,12 +30,18 @@ STYLES = (
 
 
 def _publicDesigner():
-    """A condition for IDPs whose designer may be shown: an Active, not anonymised account."""
+    """A condition for IDPs whose designer may be shown: an Active, not anonymised account
+    on an Active profile."""
     from app.entity.user_account import UserAccountEntity
+    from app.entity.user_profile import UserProfileEntity
 
     return IDPEntity.designerId.in_(
-        select(UserAccountEntity.userId).where(
-            UserAccountEntity.status == "Active", UserAccountEntity.isAnonymised.is_(False)
+        select(UserAccountEntity.userId)
+        .join(UserProfileEntity, UserAccountEntity.profileId == UserProfileEntity.profileId)
+        .where(
+            UserAccountEntity.status == "Active",
+            UserAccountEntity.isAnonymised.is_(False),
+            UserProfileEntity.status == "Active",
         )
     )
 
@@ -143,7 +149,11 @@ class IDPEntity(db.Model):
     @staticmethod
     def _designerIsPublic(idp) -> bool:
         designer = idp.designer
-        return designer.status == "Active" and not designer.isAnonymised
+        return (
+            designer.status == "Active"
+            and not designer.isAnonymised
+            and designer.profile.status == "Active"
+        )
 
     @classmethod
     def getActiveByDesigner(cls, designerId: int) -> "list[IDPEntity]":
@@ -193,11 +203,20 @@ class IDPEntity(db.Model):
 
     @classmethod
     def countFeaturedIDPs(cls) -> int:
-        """US-60 step 1.1.1: how many Active IDPs are featured."""
+        """US-60 step 1.1.1: how many Active IDPs are featured, including those of a hidden
+        designer, which keep their slot until a manager unfeatures them."""
+        return (
+            db.session.query(cls).filter(cls.status == "Active", cls.isFeatured.is_(True)).count()
+        )
+
+    @classmethod
+    def getFeaturedSlots(cls) -> "list[IDPEntity]":
+        """US-60 manager page: every IDP counted by countFeaturedIDPs, so each can be unfeatured."""
         return (
             db.session.query(cls)
-            .filter(cls.status == "Active", cls.isFeatured.is_(True), _publicDesigner())
-            .count()
+            .filter(cls.status == "Active", cls.isFeatured.is_(True))
+            .order_by(cls.featuredDate.desc(), cls.idpId.desc())
+            .all()
         )
 
     @classmethod
@@ -314,8 +333,13 @@ class IDPEntity(db.Model):
         """
         query = db.session.query(cls).filter(cls.designerId == designerId, cls.status != "Removed")
         if keyword and keyword.strip():
-            pattern = f"%{keyword.strip()}%"
-            query = query.filter(or_(cls.title.ilike(pattern), cls.description.ilike(pattern)))
+            word = keyword.strip()
+            query = query.filter(
+                or_(
+                    cls.title.icontains(word, autoescape=True),
+                    cls.description.icontains(word, autoescape=True),
+                )
+            )
         return query.order_by(cls.createdAt.desc(), cls.idpId.desc()).all()
 
     @classmethod

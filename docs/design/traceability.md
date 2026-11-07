@@ -41,15 +41,15 @@ Each row maps a class, attribute or method in a use case's class diagram to the
 | ViewRecommendedIDPsController (`control`) | ViewRecommendedIDPsController | class | app/control/view_recommended_idps_controller.py:18 |
 | ViewRecommendedIDPsController | entity | attribute | app/control/view_recommended_idps_controller.py:22 |
 | ViewRecommendedIDPsController | getRecommendedIDPs(userId) | method | app/control/view_recommended_idps_controller.py:24 |
-| IDPEntity (`entity`) | IDPEntity | class | app/entity/idp.py:43 |
-| IDPEntity | idpId | attribute | app/entity/idp.py:52 |
-| IDPEntity | title | attribute | app/entity/idp.py:59 |
-| IDPEntity | categoryId | attribute | app/entity/idp.py:56 |
-| IDPEntity | style | attribute | app/entity/idp.py:61 |
-| IDPEntity | viewCount | attribute | app/entity/idp.py:70 |
-| IDPEntity | status | attribute | app/entity/idp.py:67 |
-| IDPEntity | getRecommendedIDPs(userId) | method | app/entity/idp.py:219 |
-| IDPEntity | getPopularIDPs() | method | app/entity/idp.py:173 |
+| IDPEntity (`entity`) | IDPEntity | class | app/entity/idp.py:49 |
+| IDPEntity | idpId | attribute | app/entity/idp.py:58 |
+| IDPEntity | title | attribute | app/entity/idp.py:65 |
+| IDPEntity | categoryId | attribute | app/entity/idp.py:62 |
+| IDPEntity | style | attribute | app/entity/idp.py:67 |
+| IDPEntity | viewCount | attribute | app/entity/idp.py:76 |
+| IDPEntity | status | attribute | app/entity/idp.py:73 |
+| IDPEntity | getRecommendedIDPs(userId) | method | app/entity/idp.py:238 |
+| IDPEntity | getPopularIDPs() | method | app/entity/idp.py:183 |
 
 ## US-13
 
@@ -57,19 +57,19 @@ Each row maps a class, attribute or method in a use case's class diagram to the
 | --- | --- | --- | --- |
 | CompareIDPPage (`boundary`) | CompareIDPPage | class | app/boundary/compare.py:35 |
 | CompareIDPPage | controller | attribute | app/boundary/compare.py:49 |
-| CompareIDPPage | displayComparison() | method | app/boundary/compare.py:88 |
-| CompareIDPPage | displayMessage() | method | app/boundary/compare.py:94 |
+| CompareIDPPage | displayComparison() | method | app/boundary/compare.py:87 |
+| CompareIDPPage | displayMessage() | method | app/boundary/compare.py:92 |
 | CompareIDPsController (`control`) | CompareIDPsController | class | app/control/compare_idps_controller.py:4 |
 | CompareIDPsController | entity | attribute | app/control/compare_idps_controller.py:8 |
 | CompareIDPsController | compareIDPs(idpIds) | method | app/control/compare_idps_controller.py:10 |
-| IDPEntity (`entity`) | IDPEntity | class | app/entity/idp.py:43 |
-| IDPEntity | idpId | attribute | app/entity/idp.py:52 |
-| IDPEntity | title | attribute | app/entity/idp.py:59 |
-| IDPEntity | style | attribute | app/entity/idp.py:61 |
-| IDPEntity | budget | attribute | app/entity/idp.py:63 |
-| IDPEntity | location | attribute | app/entity/idp.py:64 |
-| IDPEntity | propertyType | attribute | app/entity/idp.py:62 |
-| IDPEntity | compareIDPs(idpIds) | method | app/entity/idp.py:159 |
+| IDPEntity (`entity`) | IDPEntity | class | app/entity/idp.py:49 |
+| IDPEntity | idpId | attribute | app/entity/idp.py:58 |
+| IDPEntity | title | attribute | app/entity/idp.py:65 |
+| IDPEntity | style | attribute | app/entity/idp.py:67 |
+| IDPEntity | budget | attribute | app/entity/idp.py:69 |
+| IDPEntity | location | attribute | app/entity/idp.py:70 |
+| IDPEntity | propertyType | attribute | app/entity/idp.py:68 |
+| IDPEntity | compareIDPs(idpIds) | method | app/entity/idp.py:169 |
 
 ## US-19
 
@@ -149,18 +149,18 @@ Each row maps a class, attribute or method in a use case's class diagram to the
 | AddIDPController | entity | attribute | app/control/add_idp_controller.py:14 |
 | AddIDPController | addIDP(idp, photos) | method | app/control/add_idp_controller.py:18 |
 | AddIDPController | validateIDP(idp, photos) | method | app/control/add_idp_controller.py:27 |
-| IDPEntity (`entity`) | IDPEntity | class | app/entity/idp.py:43 |
-| IDPEntity | idpId | attribute | app/entity/idp.py:52 |
-| IDPEntity | designerId | attribute | app/entity/idp.py:53 |
-| IDPEntity | title | attribute | app/entity/idp.py:59 |
-| IDPEntity | description | attribute | app/entity/idp.py:60 |
-| IDPEntity | categoryId | attribute | app/entity/idp.py:56 |
-| IDPEntity | style | attribute | app/entity/idp.py:61 |
-| IDPEntity | propertyType | attribute | app/entity/idp.py:62 |
-| IDPEntity | budget | attribute | app/entity/idp.py:63 |
-| IDPEntity | location | attribute | app/entity/idp.py:64 |
-| IDPEntity | photoUrls | attribute | app/entity/idp.py:65 |
-| IDPEntity | addIDP(idp, photos) | method | app/entity/idp.py:260 |
+| IDPEntity (`entity`) | IDPEntity | class | app/entity/idp.py:49 |
+| IDPEntity | idpId | attribute | app/entity/idp.py:58 |
+| IDPEntity | designerId | attribute | app/entity/idp.py:59 |
+| IDPEntity | title | attribute | app/entity/idp.py:65 |
+| IDPEntity | description | attribute | app/entity/idp.py:66 |
+| IDPEntity | categoryId | attribute | app/entity/idp.py:62 |
+| IDPEntity | style | attribute | app/entity/idp.py:67 |
+| IDPEntity | propertyType | attribute | app/entity/idp.py:68 |
+| IDPEntity | budget | attribute | app/entity/idp.py:69 |
+| IDPEntity | location | attribute | app/entity/idp.py:70 |
+| IDPEntity | photoUrls | attribute | app/entity/idp.py:71 |
+| IDPEntity | addIDP(idp, photos) | method | app/entity/idp.py:279 |
 
 ## US-43
 
@@ -173,12 +173,12 @@ Each row maps a class, attribute or method in a use case's class diagram to the
 | ViewIDPViewCountController (`control`) | ViewIDPViewCountController | class | app/control/view_idp_view_count_controller.py:4 |
 | ViewIDPViewCountController | entity | attribute | app/control/view_idp_view_count_controller.py:8 |
 | ViewIDPViewCountController | getViewCount(idpId) | method | app/control/view_idp_view_count_controller.py:10 |
-| IDPEntity (`entity`) | IDPEntity | class | app/entity/idp.py:43 |
-| IDPEntity | idpId | attribute | app/entity/idp.py:52 |
-| IDPEntity | designerId | attribute | app/entity/idp.py:53 |
-| IDPEntity | title | attribute | app/entity/idp.py:59 |
-| IDPEntity | viewCount | attribute | app/entity/idp.py:70 |
-| IDPEntity | getViewCount(idpId) | method | app/entity/idp.py:381 |
+| IDPEntity (`entity`) | IDPEntity | class | app/entity/idp.py:49 |
+| IDPEntity | idpId | attribute | app/entity/idp.py:58 |
+| IDPEntity | designerId | attribute | app/entity/idp.py:59 |
+| IDPEntity | title | attribute | app/entity/idp.py:65 |
+| IDPEntity | viewCount | attribute | app/entity/idp.py:76 |
+| IDPEntity | getViewCount(idpId) | method | app/entity/idp.py:405 |
 
 ## US-48
 
@@ -194,13 +194,13 @@ Each row maps a class, attribute or method in a use case's class diagram to the
 | SendWeeklySummaryController | composeSummary(summary) | method | app/control/send_weekly_summary_controller.py:43 |
 | SendWeeklySummaryController | composeNoActivityNotice() | method | app/control/send_weekly_summary_controller.py:61 |
 | SendWeeklySummaryController | scheduleRetry(designerId) | method | app/control/send_weekly_summary_controller.py:75 |
-| IDPEntity (`entity`) | IDPEntity | class | app/entity/idp.py:43 |
-| IDPEntity | idpId | attribute | app/entity/idp.py:52 |
-| IDPEntity | designerId | attribute | app/entity/idp.py:53 |
-| IDPEntity | viewCount | attribute | app/entity/idp.py:70 |
-| IDPEntity | shortlistCount | attribute | app/entity/idp.py:71 |
-| IDPEntity | getOptedInDesigners() | method | app/entity/idp.py:429 |
-| IDPEntity | getWeeklyStats(designerId) | method | app/entity/idp.py:452 |
+| IDPEntity (`entity`) | IDPEntity | class | app/entity/idp.py:49 |
+| IDPEntity | idpId | attribute | app/entity/idp.py:58 |
+| IDPEntity | designerId | attribute | app/entity/idp.py:59 |
+| IDPEntity | viewCount | attribute | app/entity/idp.py:76 |
+| IDPEntity | shortlistCount | attribute | app/entity/idp.py:77 |
+| IDPEntity | getOptedInDesigners() | method | app/entity/idp.py:453 |
+| IDPEntity | getWeeklyStats(designerId) | method | app/entity/idp.py:476 |
 | EmailService (`boundary`) | EmailService | class | app/boundary/email_service.py:13 |
 | EmailService | sendSummaryEmail(email, content) | method | app/boundary/email_service.py:21 |
 
@@ -256,15 +256,15 @@ Each row maps a class, attribute or method in a use case's class diagram to the
 | FeatureIDPController | entity | attribute | app/control/feature_idp_controller.py:16 |
 | FeatureIDPController | featureIDP(idpId) | method | app/control/feature_idp_controller.py:19 |
 | FeatureIDPController | unfeatureIDP(idpId) | method | app/control/feature_idp_controller.py:26 |
-| IDPEntity (`entity`) | IDPEntity | class | app/entity/idp.py:43 |
-| IDPEntity | idpId | attribute | app/entity/idp.py:52 |
-| IDPEntity | designerId | attribute | app/entity/idp.py:53 |
-| IDPEntity | title | attribute | app/entity/idp.py:59 |
-| IDPEntity | status | attribute | app/entity/idp.py:67 |
-| IDPEntity | isFeatured | attribute | app/entity/idp.py:68 |
-| IDPEntity | featuredDate | attribute | app/entity/idp.py:69 |
-| IDPEntity | countFeaturedIDPs() | method | app/entity/idp.py:195 |
-| IDPEntity | setFeatured(idpId, featured) | method | app/entity/idp.py:204 |
+| IDPEntity (`entity`) | IDPEntity | class | app/entity/idp.py:49 |
+| IDPEntity | idpId | attribute | app/entity/idp.py:58 |
+| IDPEntity | designerId | attribute | app/entity/idp.py:59 |
+| IDPEntity | title | attribute | app/entity/idp.py:65 |
+| IDPEntity | status | attribute | app/entity/idp.py:73 |
+| IDPEntity | isFeatured | attribute | app/entity/idp.py:74 |
+| IDPEntity | featuredDate | attribute | app/entity/idp.py:75 |
+| IDPEntity | countFeaturedIDPs() | method | app/entity/idp.py:205 |
+| IDPEntity | setFeatured(idpId, featured) | method | app/entity/idp.py:223 |
 
 ## Documented exception: SEQUENCE_DIAGRAM_PARAMETERS
 

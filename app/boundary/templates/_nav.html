@@ -28,7 +28,7 @@
       <a href="{{ url_for('moderation.reported') }}">Reported</a>
       <a href="{{ url_for('moderation.featured') }}">Featured</a>
       {% endif %}
-      <a href="{{ url_for('account.account') }}">Account</a>
+      <a class="nav-account" href="{{ url_for('account.account') }}" title="Your account">{{ g.current_account.name }}</a>
       <form method="post" action="{{ url_for('auth.logout') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button class="link-button" type="submit">Log out</button>

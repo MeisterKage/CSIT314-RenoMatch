@@ -40,7 +40,9 @@ def test_featured_limit_counts_featured_idps_of_hidden_designers(make_idp):
     assert IDPEntity.countFeaturedIDPs() == 1
 
 
-def test_manager_still_sees_a_featured_idp_of_a_hidden_designer(client, make_account, make_idp, login):
+def test_manager_still_sees_a_featured_idp_of_a_hidden_designer(
+    client, make_account, make_idp, login
+):
     idp = make_idp(isFeatured=True)
     suspend_profile(idp)
     login(make_account(role="platform").username)

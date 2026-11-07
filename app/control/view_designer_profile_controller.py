@@ -31,6 +31,7 @@ class ViewDesignerProfileController:
             or designer.role != "designer"
             or designer.status != "Active"
             or designer.isAnonymised
+            or designer.profile.status != "Active"
         ):
             return None
         return DesignerProfile(

@@ -37,8 +37,8 @@ class CompareIDPPage(MethodView):
 
     `post` on /compare/select is sequence step 1 (tick "Compare" on an IDP), with
     1.1 displayMessage() when 3 are already selected (opt 1a). `get` on /compare is step 2
-    (click "Compare"): 2.1 compareIDPs, then 2.2 displayComparison, or 2.3 displayMessage
-    (alt 2a), and 2.4 displayMessage when a selected IDP is no longer available (opt 3a).
+    (click "Compare"): 2.1 compareIDPs, then 2.2 displayComparison, or 2.4 displayMessage
+    (alt 2a), and 2.3 displayMessage when a selected IDP is no longer available (opt 3a).
     Both display methods take no argument, as in the class diagram, so the data they show
     is held in `idps` and `message`.
     """
@@ -49,7 +49,6 @@ class CompareIDPPage(MethodView):
         self.controller = CompareIDPsController()
         self.idps = []
         self.message = None
-        self.view = "comparison"
 
     def get(self):
         idpIds = selectedIds()
@@ -89,12 +88,10 @@ class CompareIDPPage(MethodView):
         """2.2: the table of style, budget, location, property type, category and designer.
         It sets what the page shows and `render` draws it once, so a page that shows the
         table and then the 3a message is drawn a single time."""
-        self.view = "comparison"
 
     def displayMessage(self):
         """1.1, 2.3 and 2.4: `message`. After a tick `post` flashes it on the page the user
         was on. On the comparison page it is drawn with the table, if there is one."""
-        self.view = "message"
 
     def render(self):
         return render_template("compare/compare.html", idps=self.idps, message=self.message)

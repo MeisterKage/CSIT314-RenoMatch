@@ -2,7 +2,7 @@ from sqlalchemy import or_, update
 from sqlalchemy.exc import IntegrityError
 
 from app.entity.db import db, utcnow
-from app.entity.idp import IDPEntity
+from app.entity.idp import IDPEntity, _publicDesigner
 from app.entity.platform_activity import PlatformActivityEntity
 
 NOTE_MAX_LENGTH = 255
@@ -31,13 +31,14 @@ class FavouriteEntity(db.Model):
 
         A new favourite adds a `shortlist` PlatformActivityEntity and increments the IDP's
         shortlistCount in the same commit. Updating a note counts nothing. Returns None
-        when the IDP does not exist or is not Active, or the note is over 255 characters.
+        when the IDP does not exist, is not Active or has a hidden designer, or the note is
+        over 255 characters.
         """
         note = (note or "").strip()
         if len(note) > NOTE_MAX_LENGTH:
             return None
         idp = db.session.get(IDPEntity, idpId)
-        if idp is None or idp.status != "Active":
+        if idp is None or idp.status != "Active" or not IDPEntity._designerIsPublic(idp):
             return None
         favourite = cls.getFavourite(userId, idpId)
         if favourite is not None:
@@ -103,6 +104,6 @@ class FavouriteEntity(db.Model):
     def _activeQuery(cls, userId: int):
         return (
             cls.query.join(IDPEntity, cls.idpId == IDPEntity.idpId)
-            .filter(cls.userId == userId, IDPEntity.status == "Active")
+            .filter(cls.userId == userId, IDPEntity.status == "Active", _publicDesigner())
             .order_by(cls.savedAt.desc(), cls.favouriteId.desc())
         )
