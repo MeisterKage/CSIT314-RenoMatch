@@ -7,6 +7,7 @@ from sqlalchemy.exc import OperationalError
 from app.entity import UserAccountEntity, db
 
 DEV_SECRET_KEY = "dev-only-not-secret"
+MAIL_SETTINGS = ("MAIL_SERVER", "MAIL_PORT", "MAIL_USERNAME", "MAIL_PASSWORD", "MAIL_SENDER")
 
 csrf = CSRFProtect()
 
@@ -27,6 +28,7 @@ def create_app(test_config: dict | None = None) -> Flask:
         SEED_ON_EMPTY=os.environ.get("SEED_ON_EMPTY", "1") == "1",
         UPLOAD_FOLDER=os.path.join(app.instance_path, "uploads"),
         MAX_CONTENT_LENGTH=30 * 1024 * 1024,
+        **{key: os.environ.get(key, "") for key in MAIL_SETTINGS},
     )
     if test_config:
         app.config.update(test_config)

@@ -60,5 +60,5 @@ def test_validation_errors_are_shown_and_nothing_saved(client, make_account, log
 
 def test_nav_and_home_link_to_company(client, make_account, login):
     designer_login(make_account, login)
-    for page in (client.get("/designer/").data, client.get("/designer/company").data):
+    for page in (client.get("/").data, client.get("/designer/company").data):
         assert b'href="/designer/company"' in page

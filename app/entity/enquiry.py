@@ -43,7 +43,7 @@ class EnquiryEntity(db.Model):
         IDP does not exist or is not Active.
         """
         idp = db.session.get(IDPEntity, idpId)
-        if idp is None or idp.status != "Active":
+        if idp is None or idp.status != "Active" or not IDPEntity._designerIsPublic(idp):
             return None
         enquiry = cls(userId=userId, designerId=idp.designerId, idpId=idpId, subject=subject)
         enquiry.messages.append(EnquiryMessageEntity(senderId=userId, body=message))

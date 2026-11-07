@@ -12,6 +12,25 @@ NO_RECORDS = "No audit records found for this period."
 BAD_RANGE = "The start date must not be after the end date."
 
 
+ACTION_LABELS = {
+    "create_account": "Created account",
+    "update_account": "Updated account",
+    "suspend_account": "Suspended account",
+    "reactivate_account": "Reactivated account",
+    "unlock_account": "Unlocked account",
+    "create_profile": "Created profile",
+    "update_profile": "Updated profile",
+    "suspend_profile": "Suspended profile",
+    "reactivate_profile": "Reactivated profile",
+}
+
+
+@bp.app_template_filter("auditActionLabel")
+def auditActionLabel(action: str) -> str:
+    """Display only: the stored action code stays as it is."""
+    return ACTION_LABELS.get(action, action)
+
+
 def parseDate(value: str):
     """A yyyy-mm-dd date from the form, or None when it is blank or unreadable."""
     try:

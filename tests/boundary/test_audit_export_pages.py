@@ -48,7 +48,7 @@ def test_audit_log_lists_entries_newest_first_and_is_read_only(client, admin):
     addLog(admin, "suspend_account", datetime(2026, 1, 1, 9, 30), targetId=11)
     addLog(admin, "create_account", datetime(2026, 2, 1, 14, 5), targetId=12)
     page = text(client.get("/admin/audit-log"))
-    assert page.index("create_account") < page.index("suspend_account")
+    assert page.index("Created account") < page.index("Suspended account")
     assert "Boss Person" in page
     assert "01 Jan 2026" in page and "09:30" in page
     assert "user_account" in page and "#11" in page
@@ -123,3 +123,16 @@ def test_accounts_page_export_link_uses_current_filters(client, admin):
     page = text(client.get("/admin/accounts?keyword=boss&status=Active"))
     assert "disabled" not in page
     assert 'href="/admin/accounts/export?keyword=boss&amp;status=Active"' in page
+
+
+def test_audit_log_shows_friendly_action_labels(client, admin):
+    addLog(admin, "suspend_account", datetime(2026, 3, 1, 9, 0))
+    addLog(admin, "unlock_account", datetime(2026, 3, 2, 9, 0))
+    page = text(client.get("/admin/audit-log"))
+    assert "Suspended account" in page and "Unlocked account" in page
+    assert "suspend_account" not in page
+
+
+def test_audit_log_keeps_an_unknown_action_code(client, admin):
+    addLog(admin, "mystery_action", datetime(2026, 3, 1, 9, 0))
+    assert "mystery_action" in text(client.get("/admin/audit-log"))

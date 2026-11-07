@@ -153,6 +153,13 @@ a {
   align-items: center;
   gap: 1.75rem;
   flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.site-nav .nav-account {
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .site-nav a,
@@ -181,9 +188,30 @@ a {
   cursor: pointer;
 }
 
-.site-nav .who {
-  color: var(--stone);
-  font-size: 0.9375rem;
+.nav-menu {
+  position: relative;
+}
+
+.nav-menu summary {
+  display: none;
+  list-style: none;
+  cursor: pointer;
+  padding: 0.45rem 1rem;
+  border-radius: var(--pill);
+  background: var(--mist);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.nav-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.nav-menu__items {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  flex-wrap: wrap;
 }
 
 .site-nav .button {
@@ -272,7 +300,12 @@ main {
 }
 
 .page {
-  padding: 3rem 0 5rem;
+  padding-top: 3rem;
+  padding-bottom: 5rem;
+}
+
+.flash-stack {
+  padding-bottom: 1.5rem;
 }
 
 .flash {
@@ -334,14 +367,6 @@ main {
 
 .site-footer li + li {
   margin-top: 0.4rem;
-}
-
-.footer-note {
-  margin: 2.5rem 0 0;
-  padding-top: 1.5rem;
-  border-top: 1px solid #33383b;
-  font-size: 0.8125rem;
-  max-width: none;
 }
 
 /* Home: hero ------------------------------------------------------------ */
@@ -516,7 +541,8 @@ main {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 4rem;
   align-items: start;
-  padding: 3.5rem 0 5rem;
+  padding-top: 3.5rem;
+  padding-bottom: 5rem;
 }
 
 .auth__form {
@@ -682,6 +708,7 @@ fieldset {
 }
 
 .tool {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -692,6 +719,18 @@ fieldset {
 
 .tool h3 {
   margin: 0;
+}
+
+/* The heading link covers the whole card, so anywhere on the card can be clicked. */
+.tool h3 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+}
+
+.tool:hover {
+  background: var(--sage-tint);
 }
 
 .tool h3 a {
@@ -708,30 +747,11 @@ fieldset {
   font-size: 0.9375rem;
 }
 
-.tool__status {
-  align-self: flex-start;
-  margin-top: 0.75rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--pill);
-  background: var(--white);
-  color: var(--stone);
-  font-size: 0.8125rem;
-  font-weight: 600;
-}
-
-.tool--available {
-  background: var(--sage-tint);
-}
-
-.tool--available .tool__status {
-  background: var(--sage);
-  color: var(--white);
-}
-
 /* Browse designs ------------------------------------------------------- */
 
 .section--tight {
-  padding: 3rem 0 5rem;
+  padding-top: 3rem;
+  padding-bottom: 5rem;
 }
 
 .page-title {
@@ -871,20 +891,9 @@ fieldset {
 }
 
 .compare-form {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
   margin-top: 1.25rem;
   padding-top: 1.25rem;
   border-top: 1px solid var(--line);
-}
-
-.compare-form__check {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
 }
 
 .favourite-form {
@@ -1052,6 +1061,34 @@ fieldset {
   gap: 0.35rem;
 }
 
+/* Login prompt ---------------------------------------------------------- */
+
+.login-prompt {
+  width: min(26rem, calc(100vw - 2rem));
+  padding: 2rem;
+  border: 0;
+  border-radius: var(--radius);
+  color: var(--charcoal);
+}
+
+.login-prompt::backdrop {
+  background: rgba(20, 23, 25, 0.55);
+}
+
+.login-prompt h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.login-prompt p {
+  color: var(--stone);
+  margin-bottom: 1.5rem;
+}
+
+.login-prompt form {
+  margin-top: 1rem;
+}
+
 /* Small screens --------------------------------------------------------- */
 
 @media (max-width: 60rem) {
@@ -1107,9 +1144,28 @@ fieldset {
     font-size: 0.875rem;
   }
 
-  .site-nav .who,
   .site-nav .nav-section {
     display: none;
+  }
+
+  .nav-menu summary {
+    display: block;
+  }
+
+  .nav-menu__items {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.5rem);
+    z-index: 20;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.9rem;
+    min-width: 12rem;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--white);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
   }
 
   .section {

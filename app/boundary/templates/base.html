@@ -23,16 +23,16 @@
     </div>
   </header>
   <main id="main">
-    {% block hero %}{% endblock %}
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-      <div class="wrap">
+      <div class="wrap flash-stack">
         {% for category, message in messages %}
           <div class="flash flash--{{ category }}" role="status">{{ message }}</div>
         {% endfor %}
       </div>
       {% endif %}
     {% endwith %}
+    {% block hero %}{% endblock %}
     {% block content %}{% endblock %}
   </main>
   <footer class="site-footer">
@@ -54,7 +54,9 @@
           <h2>Account</h2>
           <ul>
             {% if g.current_account %}
+              {% if g.current_account.role not in ('customer', 'designer') %}
               <li><a href="{{ url_for(ROLE_HOME[g.current_account.role]) }}">Your home</a></li>
+              {% endif %}
               <li><a href="{{ url_for('auth.change_password') }}">Change password</a></li>
             {% else %}
               <li><a href="{{ url_for('auth.login') }}">Log in</a></li>
@@ -63,8 +65,8 @@
           </ul>
         </div>
       </div>
-      <p class="footer-note">A CSIT314 group project. Photos from Unsplash. Test data is regenerated whenever the site restarts.</p>
     </div>
   </footer>
+  <script src="{{ url_for('static', filename='nav.js') }}" defer></script>
 </body>
 </html>

@@ -1,7 +1,17 @@
 """US-12 home page recommendations and US-13 compare page."""
 
+import pytest
+
 from app.boundary.public import HomePage
 from app.entity import FavouriteEntity, PlatformActivityEntity, db
+
+
+@pytest.fixture
+def signedIn(client, make_account, login):
+    """US-13's actor is a Registered User: a logged-in customer."""
+    account = make_account()
+    login(account.username)
+    return account
 
 
 def customer(make_account, login):
@@ -23,7 +33,7 @@ def view(user, idp):
 # US-13 step 1 and opt 1a
 
 
-def test_select_adds_to_the_session_and_redirects(client, make_idp):
+def test_select_adds_to_the_session_and_redirects(signedIn, client, make_idp):
     a = make_idp()
     resp = client.post("/compare/select", data={"idpId": a.idpId})
     assert resp.status_code == 302
@@ -31,14 +41,14 @@ def test_select_adds_to_the_session_and_redirects(client, make_idp):
         assert session["compareIds"] == [a.idpId]
 
 
-def test_select_same_idp_twice_keeps_one(client, make_idp):
+def test_select_same_idp_twice_keeps_one(signedIn, client, make_idp):
     a = make_idp()
     select(client, a, a)
     with client.session_transaction() as session:
         assert session["compareIds"] == [a.idpId]
 
 
-def test_fourth_selection_is_refused_with_the_1a_message(client, make_idp):
+def test_fourth_selection_is_refused_with_the_1a_message(signedIn, client, make_idp):
     idps = [make_idp() for _ in range(4)]
     select(client, *idps[:3])
     resp = client.post("/compare/select", data={"idpId": idps[3].idpId}, follow_redirects=True)
@@ -47,14 +57,14 @@ def test_fourth_selection_is_refused_with_the_1a_message(client, make_idp):
         assert session["compareIds"] == [i.idpId for i in idps[:3]]
 
 
-def test_reticking_a_selected_idp_at_the_limit_is_not_refused(client, make_idp):
+def test_reticking_a_selected_idp_at_the_limit_is_not_refused(signedIn, client, make_idp):
     idps = [make_idp() for _ in range(3)]
     select(client, *idps)
     resp = client.post("/compare/select", data={"idpId": idps[0].idpId}, follow_redirects=True)
     assert b"up to 3" not in resp.data
 
 
-def test_clear_empties_the_selection(client, make_idp):
+def test_clear_empties_the_selection(signedIn, client, make_idp):
     select(client, make_idp())
     assert client.post("/compare/clear").status_code == 302
     with client.session_transaction() as session:
@@ -64,7 +74,7 @@ def test_clear_empties_the_selection(client, make_idp):
 # US-13 step 2 alt branches
 
 
-def test_two_selected_shows_the_table_with_every_row(client, make_idp, make_category):
+def test_two_selected_shows_the_table_with_every_row(signedIn, client, make_idp, make_category):
     a = make_idp(title="Alpha", style="Japandi", location="Bishan", budget=30000.0)
     b = make_idp(
         title="Beta", style="Luxury", propertyType="Landed", category=make_category(name="Kitchens")
@@ -80,12 +90,12 @@ def test_two_selected_shows_the_table_with_every_row(client, make_idp, make_cate
     assert f"/idps/{a.idpId}" in page
 
 
-def test_three_selected_shows_three_columns(client, make_idp):
+def test_three_selected_shows_three_columns(signedIn, client, make_idp):
     select(client, *[make_idp() for _ in range(3)])
     assert client.get("/compare").data.decode().count("View Details") == 3
 
 
-def test_fewer_than_two_shows_the_2a_message_and_no_table(client, make_idp):
+def test_fewer_than_two_shows_the_2a_message_and_no_table(signedIn, client, make_idp):
     a = make_idp()
     assert b"Select at least 2 IDPs to compare" in client.get("/compare").data
     select(client, a)
@@ -94,7 +104,7 @@ def test_fewer_than_two_shows_the_2a_message_and_no_table(client, make_idp):
     assert b"View Details" not in page
 
 
-def test_unavailable_idp_shows_the_rest_and_the_3a_message(client, make_idp):
+def test_unavailable_idp_shows_the_rest_and_the_3a_message(signedIn, client, make_idp):
     a, b, c = make_idp(title="Alpha"), make_idp(title="Beta"), make_idp(title="Gamma")
     select(client, a, b, c)
     b.status = "Suspended"
@@ -176,3 +186,48 @@ def test_home_page_matches_the_class_diagram():
     assert page.controller.__class__.__name__ == "ViewRecommendedIDPsController"
     for name in ("displayRecommendedIDPs", "displayPopularIDPs", "displayMessage"):
         assert callable(getattr(page, name))
+
+
+# Wrap-up: guards, single render, safe return path
+
+
+@pytest.mark.parametrize(
+    "method, path", [("get", "/compare"), ("post", "/compare/select"), ("post", "/compare/clear")]
+)
+def test_compare_is_for_logged_in_customers_only(client, make_account, login, method, path):
+    assert getattr(client, method)(path).status_code == 302  # visitor goes to log in
+    login(make_account(role="designer").username)
+    assert getattr(client, method)(path).status_code == 403
+
+
+def test_compare_tick_form_is_only_shown_to_customers(client, make_idp, make_account, login):
+    idp = make_idp()
+    assert b"compare-form" not in client.get(f"/idps/{idp.idpId}").data
+    login(make_account().username)
+    assert b"compare-form" in client.get(f"/idps/{idp.idpId}").data
+
+
+def test_3a_branch_renders_the_page_once(signedIn, client, make_idp, monkeypatch):
+    from app.boundary import compare
+
+    a, b, c = make_idp(), make_idp(), make_idp()
+    select(client, a, b, c)
+    b.status = "Suspended"
+    db.session.commit()
+    calls = []
+    real = compare.render_template
+    monkeypatch.setattr(
+        compare, "render_template", lambda *args, **kw: calls.append(1) or real(*args, **kw)
+    )
+    assert client.get("/compare").status_code == 200
+    assert len(calls) == 1
+
+
+@pytest.mark.parametrize("referrer", ["http://x.test//evil.example", "/\\evil.example", "http://x.test//y"])
+def test_backTo_rejects_double_slash_and_backslash_paths(
+    signedIn, client, make_idp, referrer
+):
+    resp = client.post(
+        "/compare/select", data={"idpId": make_idp().idpId}, headers={"Referer": referrer}
+    )
+    assert resp.headers["Location"].endswith("/compare")

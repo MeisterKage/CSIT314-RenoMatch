@@ -23,9 +23,9 @@ def test_change_password_then_log_in_with_new_password(client, make_account, log
             "confirm_password": "N3wPassword",
         },
     )
-    assert resp.headers["Location"] == "/customer/"
+    assert resp.headers["Location"] == "/"
     client.post("/logout")
-    assert login(account.username, "N3wPassword").headers["Location"] == "/customer/"
+    assert login(account.username, "N3wPassword").headers["Location"] == "/"
 
 
 def test_change_password_shows_errors(client, make_account, login):

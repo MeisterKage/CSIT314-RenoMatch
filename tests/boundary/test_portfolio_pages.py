@@ -4,6 +4,7 @@ from io import BytesIO
 from pathlib import Path
 
 import pytest
+from werkzeug.test import EnvironBuilder
 
 from app.entity import CompanyInfoEntity, IDPEntity, PlatformActivityEntity, db
 from tests.helpers import GIF_BYTES, jpeg_bytes, png_bytes
@@ -53,7 +54,16 @@ def form(category):
 
 
 def submit(client, url, data):
-    return client.post(url, data=data, content_type="multipart/form-data")
+    """POST a multipart form, closing the temporary file the test client spools it to."""
+    builder = EnvironBuilder(
+        path=url, method="POST", data=data, content_type="multipart/form-data"
+    )
+    environ = builder.get_environ()
+    try:
+        return client.open(environ)
+    finally:
+        environ["wsgi.input"].close()
+        builder.close()
 
 
 def uploads(app):
@@ -206,9 +216,9 @@ def test_request_over_the_total_limit_is_refused_with_a_message(
 def test_uploaded_photo_is_served_and_unsafe_paths_are_not(client, designer, company, form):
     submit(client, "/designer/portfolio/new", form())
     url = IDPEntity.query.one().photoUrls[0]
-    resp = client.get(url)
-    assert resp.status_code == 200 and resp.mimetype == "image/png"
-    assert resp.data == png_bytes()
+    with client.get(url) as resp:
+        assert resp.status_code == 200 and resp.mimetype == "image/png"
+        assert resp.data == png_bytes()
     assert client.get("/uploads/missing.png").status_code == 404
     assert client.get("/uploads/..%2Frenomatch.db").status_code == 404
     assert client.get("/uploads/../../app/__init__.py").status_code == 404
@@ -323,7 +333,7 @@ def test_delete_is_post_only(client, designer, make_idp):
 
 
 def test_nav_and_home_link_to_the_portfolio(client, designer):
-    for page in (client.get("/designer/").data, client.get("/designer/portfolio").data):
+    for page in (client.get("/").data, client.get("/designer/portfolio").data):
         assert b'href="/designer/portfolio"' in page
 
 

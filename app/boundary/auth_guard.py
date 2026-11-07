@@ -6,8 +6,8 @@ from app.control.login_controller import LoginController
 
 ROLE_HOME = {
     "admin": "admin.home",
-    "designer": "designer.home",
-    "customer": "customer.home",
+    "designer": "public.home",
+    "customer": "public.home",
     "platform": "platform.home",
 }
 

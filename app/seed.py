@@ -88,6 +88,7 @@ FLAG_REASONS = [
 AUDIT_ACTIONS = [
     "create_account", "update_account", "suspend_account", "reactivate_account",
     "create_profile", "update_profile", "suspend_profile", "reactivate_profile",
+    "unlock_account",
 ]
 
 ALL_MODELS = [

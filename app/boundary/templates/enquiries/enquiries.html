@@ -5,7 +5,6 @@
   <div class="wrap">
     <div class="section-head">
       <h1 class="page-title">{{ 'Enquiries from homeowners' if role == 'designer' else 'Your enquiries' }}</h1>
-      <p>{{ 'Open a conversation to read it and reply.' if role == 'designer' else 'Your conversations with designers. Open one to read the replies.' }}</p>
     </div>
     {% if enquiries %}
     <ul class="threads">

@@ -25,7 +25,7 @@ def test_my_account_requires_login(client, default_profiles):
 
 def test_nav_has_an_account_link(client, make_account, login):
     login(make_account().username)
-    assert b'href="/account"' in client.get("/customer/").data
+    assert b'href="/account"' in client.get("/").data
 
 
 def test_update_details(client, make_account, login):

@@ -8,8 +8,8 @@ from tests.helpers import TEST_PASSWORD
     "role, home",
     [
         ("admin", "/admin/"),
-        ("designer", "/designer/"),
-        ("customer", "/customer/"),
+        ("designer", "/"),
+        ("customer", "/"),
         ("platform", "/platform/"),
     ],
 )
@@ -24,13 +24,6 @@ def test_login_page_renders_for_anonymous_visitor(client, default_profiles):
     resp = client.get("/login")
     assert resp.status_code == 200
     assert b"Log in" in resp.data
-
-
-def test_customer_home_renders_for_logged_in_customer(client, make_account, login):
-    login(make_account(role="customer").username)
-    resp = client.get("/customer/")
-    assert resp.status_code == 200
-    assert b"Customer home" in resp.data
 
 
 def test_login_page_shows_error_for_bad_password(client, make_account):
@@ -65,8 +58,8 @@ def test_logged_in_user_visiting_login_goes_home(client, make_account, login):
 
 
 def test_role_home_greets_user_by_name(client, make_account, login):
-    login(make_account(role="designer", name="Dana Tan").username)
-    assert b"Dana Tan" in client.get("/designer/").data
+    login(make_account(role="admin", name="Dana Tan").username)
+    assert b"Welcome, Dana Tan." in client.get("/admin/").data
 
 
 def test_login_page_shows_the_locked_message_after_five_failures(client, make_account):
