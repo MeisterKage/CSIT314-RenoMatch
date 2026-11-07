@@ -25,7 +25,7 @@ Every name below is the exact spelling the code must use.
 [box] [2 to 3 IDPs selected]
 [box] [2a. fewer than 2 IDPs selected]
 [box] [3a. a selected IDP is no longer available]
-[edge] 1: tick "Compare" on an IDP
+[edge] 1: click "Compare" on an IDP
 [box] 1.1: displayMessage()
 [edge] 2: click "Compare"
 [edge] 2.1: compareIDPs(idpIds)
