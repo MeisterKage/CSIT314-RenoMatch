@@ -697,6 +697,7 @@ fieldset {
 }
 
 .tool {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -707,6 +708,18 @@ fieldset {
 
 .tool h3 {
   margin: 0;
+}
+
+/* The heading link covers the whole card, so anywhere on the card can be clicked. */
+.tool h3 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+}
+
+.tool:hover {
+  background: var(--sage-tint);
 }
 
 .tool h3 a {

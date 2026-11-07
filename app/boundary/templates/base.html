@@ -54,7 +54,9 @@
           <h2>Account</h2>
           <ul>
             {% if g.current_account %}
+              {% if g.current_account.role != 'customer' %}
               <li><a href="{{ url_for(ROLE_HOME[g.current_account.role]) }}">Your home</a></li>
+              {% endif %}
               <li><a href="{{ url_for('auth.change_password') }}">Change password</a></li>
             {% else %}
               <li><a href="{{ url_for('auth.login') }}">Log in</a></li>

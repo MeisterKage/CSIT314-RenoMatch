@@ -6,7 +6,9 @@
     <h1>Homes by designers who've done it before.</h1>
     <p>Browse finished HDB, condo and landed projects from Singapore interior designers, and shortlist the studios whose style fits yours.</p>
     <div class="actions">
-      {% if g.current_account %}
+      {% if g.current_account and g.current_account.role == 'customer' %}
+        <a class="button button--light" href="{{ url_for('browse.idps') }}">Browse designs</a>
+      {% elif g.current_account %}
         <a class="button button--light" href="{{ url_for(ROLE_HOME[g.current_account.role]) }}">Go to your home</a>
       {% else %}
         <a class="button button--light" href="{{ url_for('auth.register') }}">Create an account</a>
