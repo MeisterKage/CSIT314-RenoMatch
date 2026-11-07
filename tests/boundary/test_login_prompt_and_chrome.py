@@ -47,7 +47,7 @@ def test_visitor_cannot_use_compare_without_logging_in(client, make_idp):
     [
         ("admin", "/admin/"),
         ("designer", "/designer/"),
-        ("customer", "/customer/"),
+        ("customer", "/"),
         ("platform", "/platform/"),
     ],
 )
@@ -65,8 +65,8 @@ def test_footer_has_no_project_note(client):
 
 
 def test_role_home_only_greets(client, make_account, login):
-    login(make_account(role="customer", name="Dana Tan").username)
-    page = client.get("/customer/").data
+    login(make_account(role="designer", name="Dana Tan").username)
+    page = client.get("/designer/").data
     assert b"Welcome, Dana Tan." in page
     assert b"what you can do" not in page
 

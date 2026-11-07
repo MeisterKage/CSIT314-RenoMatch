@@ -11,7 +11,7 @@ NAV_LINKS = {
     "platform": ["Categories", "Reports", "Reported", "Featured", "Account"],
 }
 HOMES = {
-    "customer": "/customer/",
+    "customer": "/",
     "designer": "/designer/",
     "admin": "/admin/",
     "platform": "/platform/",
@@ -47,7 +47,7 @@ def test_visitor_nav_keeps_public_links(client):
 
 def test_nav_has_a_details_menu_for_the_role_links(client, make_account, login):
     login(make_account(role="customer").username)
-    page = client.get("/customer/").get_data(as_text=True)
+    page = client.get("/").get_data(as_text=True)
     assert '<details class="nav-menu"' in page
 
 

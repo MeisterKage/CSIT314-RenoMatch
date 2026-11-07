@@ -9,7 +9,7 @@ from tests.helpers import TEST_PASSWORD
     [
         ("admin", "/admin/"),
         ("designer", "/designer/"),
-        ("customer", "/customer/"),
+        ("customer", "/"),
         ("platform", "/platform/"),
     ],
 )
@@ -26,11 +26,11 @@ def test_login_page_renders_for_anonymous_visitor(client, default_profiles):
     assert b"Log in" in resp.data
 
 
-def test_customer_home_renders_for_logged_in_customer(client, make_account, login):
-    login(make_account(role="customer").username)
-    resp = client.get("/customer/")
+def test_designer_home_renders_for_logged_in_designer(client, make_account, login):
+    login(make_account(role="designer").username)
+    resp = client.get("/designer/")
     assert resp.status_code == 200
-    assert b"Customer home" in resp.data
+    assert b"Interior Designer home" in resp.data
 
 
 def test_login_page_shows_error_for_bad_password(client, make_account):

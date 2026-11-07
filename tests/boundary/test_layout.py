@@ -39,7 +39,6 @@ def test_pages_have_skip_link_to_main_content(client):
     [
         ("admin", "/admin/", [b"Failed logins", b"Export accounts", b"Audit log"]),
         ("designer", "/designer/", [b"Project interest", b"Weekly summary"]),
-        ("customer", "/customer/", [b"Search designs", b"Your details", b"Compare designs"]),
         ("platform", "/platform/", [b"Featured projects", b"Activity reports"]),
     ],
 )
@@ -53,6 +52,6 @@ def test_role_home_lists_every_tool_as_a_link(client, make_account, login, role,
 
 
 def test_role_home_links_to_change_password(client, make_account, login):
-    login(make_account(role="customer").username)
-    page = client.get("/customer/").data
+    login(make_account(role="designer").username)
+    page = client.get("/designer/").data
     assert b'href="/account/password"' in page
