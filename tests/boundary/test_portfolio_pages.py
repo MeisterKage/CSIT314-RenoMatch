@@ -333,7 +333,7 @@ def test_delete_is_post_only(client, designer, make_idp):
 
 
 def test_nav_and_home_link_to_the_portfolio(client, designer):
-    for page in (client.get("/designer/").data, client.get("/designer/portfolio").data):
+    for page in (client.get("/").data, client.get("/designer/portfolio").data):
         assert b'href="/designer/portfolio"' in page
 
 

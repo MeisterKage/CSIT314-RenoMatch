@@ -891,20 +891,9 @@ fieldset {
 }
 
 .compare-form {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
   margin-top: 1.25rem;
   padding-top: 1.25rem;
   border-top: 1px solid var(--line);
-}
-
-.compare-form__check {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
 }
 
 .favourite-form {

@@ -37,11 +37,8 @@
         {% if g.current_account and g.current_account.role == 'customer' %}
         <form class="compare-form" method="post" action="/compare/select">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <label class="compare-form__check">
-            <input type="checkbox" name="idpId" value="{{ idp.idpId }}" required>
-            Compare
-          </label>
-          <button class="button button--outline" type="submit">Add to compare</button>
+          <input type="hidden" name="idpId" value="{{ idp.idpId }}">
+          <button class="button button--outline button--full" type="submit">Add to compare</button>
         </form>
         {% elif not g.current_account %}
         {# Visitors must log in to compare. Without JavaScript this is a plain link to the login page. #}

@@ -75,7 +75,7 @@ def test_dashboard_is_for_designers_only(client, make_account, login):
 
 def test_designer_home_links_the_interest_tools(client, make_account, login):
     login(make_account(role="designer").username)
-    page = client.get("/designer/").data
+    page = client.get("/").data
     assert b'href="/designer/dashboard"' in page
     assert b'href="/designer/portfolio"' in page
     assert b"Coming in Sprint" not in page
@@ -83,4 +83,4 @@ def test_designer_home_links_the_interest_tools(client, make_account, login):
 
 def test_nav_has_a_dashboard_link_for_designers(client, make_account, login):
     login(make_account(role="designer").username)
-    assert b'href="/designer/dashboard">Dashboard</a>' in client.get("/designer/").data
+    assert b'href="/designer/dashboard">Dashboard</a>' in client.get("/").data
