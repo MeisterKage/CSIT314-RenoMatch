@@ -12,8 +12,8 @@
         <a class="button button--light" href="{{ url_for('portfolio.portfolio') }}">Your portfolio</a>
       {% elif g.current_account and g.current_account.role == 'platform' %}
         <a class="button button--light" href="{{ url_for('categories.categories') }}">Project categories</a>
-      {% elif g.current_account %}
-        <a class="button button--light" href="{{ url_for(ROLE_HOME[g.current_account.role]) }}">Go to your home</a>
+      {% elif g.current_account and g.current_account.role == 'admin' %}
+        <a class="button button--light" href="{{ url_for('admin.accounts') }}">User accounts</a>
       {% else %}
         <a class="button button--light" href="{{ url_for('auth.register') }}">Create an account</a>
         <a class="button button--ghost-light" href="{{ url_for('auth.login') }}">Log in</a>

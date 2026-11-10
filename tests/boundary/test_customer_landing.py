@@ -136,6 +136,6 @@ def test_compare_needs_only_the_compare_button(client, make_account, make_idp, l
     assert f'type="hidden" name="idpId" value="{idp.idpId}"'.encode() in page
 
 
-def test_whole_tool_card_is_clickable():
+def test_role_home_tool_card_styles_are_gone():
     css = CSS.read_text(encoding="utf-8")
-    assert ".tool h3 a::after" in css
+    assert ".tool h3" not in css and ".role-head" not in css
