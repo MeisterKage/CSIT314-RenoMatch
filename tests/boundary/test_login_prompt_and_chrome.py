@@ -48,7 +48,7 @@ def test_visitor_cannot_use_compare_without_logging_in(client, make_idp):
         ("admin", "/admin/"),
         ("designer", "/"),
         ("customer", "/"),
-        ("platform", "/platform/"),
+        ("platform", "/"),
     ],
 )
 def test_nav_shows_account_name_beside_log_out_and_no_home_tab(

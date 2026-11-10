@@ -14,7 +14,7 @@ HOMES = {
     "customer": "/",
     "designer": "/",
     "admin": "/admin/",
-    "platform": "/platform/",
+    "platform": "/",
 }
 MAIN_NAV = re.compile(r'<nav class="site-nav".*?</nav>', re.S)
 HREF = re.compile(r'href="([^"]+)"')
@@ -58,7 +58,7 @@ def test_every_nav_link_and_home_tool_resolves(client, make_account, login, role
     login(make_account(role=role).username)
     home = client.get(HOMES[role]).get_data(as_text=True)
     tools = paths(home, TOOL_HREF)
-    assert tools or role in ("customer", "designer"), "the role home lists its tools as links"
+    assert tools or role != "admin", "the role home lists its tools as links"
     assert "Coming" not in home
     for href in set(paths(home, HREF)) | set(tools):
         assert client.get(href).status_code == 200, href

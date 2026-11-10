@@ -38,7 +38,6 @@ def test_pages_have_skip_link_to_main_content(client):
     "role, home, tools",
     [
         ("admin", "/admin/", [b"Failed logins", b"Export accounts", b"Audit Log"]),
-        ("platform", "/platform/", [b"Featured projects", b"Activity reports"]),
     ],
 )
 def test_role_home_lists_every_tool_as_a_link(client, make_account, login, role, home, tools):

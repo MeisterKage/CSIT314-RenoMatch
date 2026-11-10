@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import pytest
 
 from tests.helpers import TEST_PASSWORD
 
@@ -28,11 +27,45 @@ def test_customer_home_page_has_no_link_to_a_separate_home(client, make_account,
     assert b"Recommended for you" in page or b"Popular designs" in page
 
 
-@pytest.mark.parametrize("role, home", [("admin", "/admin/"), ("platform", "/platform/")])
-def test_admin_and_manager_keep_their_own_home(client, make_account, role, home):
-    account = make_account(role=role)
+def test_admin_keeps_their_own_home(client, make_account):
+    account = make_account(role="admin")
     resp = client.post("/login", data={"username": account.username, "password": TEST_PASSWORD})
-    assert resp.headers["Location"] == home
+    assert resp.headers["Location"] == "/admin/"
+
+
+def test_platform_manager_lands_on_the_website_home_after_login(client, make_account):
+    account = make_account(role="platform")
+    resp = client.post("/login", data={"username": account.username, "password": TEST_PASSWORD})
+    assert resp.headers["Location"] == "/"
+
+
+def test_old_platform_home_address_redirects_to_the_website_home(client, make_account, login):
+    login(make_account(role="platform").username)
+    resp = client.get("/platform/")
+    assert resp.status_code == 302
+    assert resp.headers["Location"] == "/"
+
+
+def test_platform_home_page_points_to_the_manager_tools(client, make_account, login):
+    login(make_account(role="platform").username)
+    page = client.get("/").data
+    assert b"Go to your home" not in page
+    assert b"Your home" not in page
+    assert b">Project categories</a>" in page
+
+
+def test_platform_manager_can_still_reach_every_former_home_tool(client, make_account, login):
+    login(make_account(role="platform").username)
+    page = client.get("/").data
+    for path in (
+        b"/platform/categories",
+        b"/platform/reports",
+        b"/platform/featured",
+        b"/platform/reported",
+        b"/account",
+    ):
+        assert b'href="' + path in page
+    assert b'href="/account/password"' in client.get("/account").data
 
 
 def test_designer_lands_on_the_website_home_after_login(client, make_account):

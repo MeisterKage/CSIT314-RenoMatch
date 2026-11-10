@@ -63,7 +63,7 @@ def test_resolving_a_closed_report_shows_a_message(client, manager, make_account
     assert b"already" in response.data.lower()
 
 
-def test_nav_and_platform_home_link_to_both_pages(client, manager):
-    page = client.get("/platform/").data
+def test_nav_links_to_both_pages(client, manager):
+    page = client.get("/").data
     assert b'href="/platform/featured"' in page
     assert b'href="/platform/reported"' in page
