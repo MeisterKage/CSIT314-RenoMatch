@@ -119,10 +119,10 @@ Each row maps a class, attribute or method in a use case's class diagram to the
 
 | Class | Element | Kind | Location |
 | --- | --- | --- | --- |
-| ManageUserAccountsPage (`boundary`) | ManageUserAccountsPage | class | app/boundary/admin.py:86 |
-| ManageUserAccountsPage | controller | attribute | app/boundary/admin.py:96 |
-| ManageUserAccountsPage | downloadCSV() | method | app/boundary/admin.py:144 |
-| ManageUserAccountsPage | displayMessage() | method | app/boundary/admin.py:194 |
+| ManageUserAccountsPage (`boundary`) | ManageUserAccountsPage | class | app/boundary/admin.py:58 |
+| ManageUserAccountsPage | controller | attribute | app/boundary/admin.py:68 |
+| ManageUserAccountsPage | downloadCSV() | method | app/boundary/admin.py:116 |
+| ManageUserAccountsPage | displayMessage() | method | app/boundary/admin.py:166 |
 | ExportUserAccountsController (`control`) | ExportUserAccountsController | class | app/control/export_user_accounts_controller.py:10 |
 | ExportUserAccountsController | entity | attribute | app/control/export_user_accounts_controller.py:14 |
 | ExportUserAccountsController | exportUserAccountsCSV(keyword, profile, status) | method | app/control/export_user_accounts_controller.py:16 |
