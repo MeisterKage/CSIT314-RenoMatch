@@ -2,6 +2,14 @@
 
 CSIT314 group project: a platform that matches renovation customers with interior designers.
 Design spec: `docs/specs/2026-10-03-renovation-platform-design.md`.
+Changes by pull request: [CHANGELOG.md](CHANGELOG.md).
+
+## Team
+
+- [MeisterKage](https://github.com/MeisterKage)
+- [sjjt67](https://github.com/sjjt67)
+- [KeefeLiew](https://github.com/KeefeLiew)
+- [jerrits69](https://github.com/jerrits69)
 
 ## Features by role
 

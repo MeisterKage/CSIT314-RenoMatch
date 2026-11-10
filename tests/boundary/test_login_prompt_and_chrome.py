@@ -45,10 +45,10 @@ def test_visitor_cannot_use_compare_without_logging_in(client, make_idp):
 @pytest.mark.parametrize(
     "role, home",
     [
-        ("admin", "/admin/"),
+        ("admin", "/"),
         ("designer", "/"),
         ("customer", "/"),
-        ("platform", "/platform/"),
+        ("platform", "/"),
     ],
 )
 def test_nav_shows_account_name_beside_log_out_and_no_home_tab(
@@ -65,13 +65,6 @@ def test_footer_has_no_project_note(client):
     page = client.get("/").data
     assert b"group project" not in page
     assert b"Test data is regenerated" not in page
-
-
-def test_role_home_only_greets(client, make_account, login):
-    login(make_account(role="admin", name="Dana Tan").username)
-    page = client.get("/admin/").data
-    assert b"Welcome, Dana Tan." in page
-    assert b"what you can do" not in page
 
 
 def test_page_headings_have_no_side_text():

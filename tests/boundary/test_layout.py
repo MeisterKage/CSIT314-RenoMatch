@@ -1,4 +1,5 @@
-import pytest
+from pathlib import Path
+
 
 
 def test_site_stylesheet_is_served(client):
@@ -34,23 +35,5 @@ def test_pages_have_skip_link_to_main_content(client):
     assert b'id="main"' in page
 
 
-@pytest.mark.parametrize(
-    "role, home, tools",
-    [
-        ("admin", "/admin/", [b"Failed logins", b"Export accounts", b"Audit Log"]),
-        ("platform", "/platform/", [b"Featured projects", b"Activity reports"]),
-    ],
-)
-def test_role_home_lists_every_tool_as_a_link(client, make_account, login, role, home, tools):
-    login(make_account(role=role).username)
-    page = client.get(home).data
-    assert b"Coming" not in page and b"sprint" not in page.lower()
-    for tool in tools:
-        assert tool in page
-    assert b"Available" not in page
-
-
-def test_role_home_links_to_change_password(client, make_account, login):
-    login(make_account(role="admin").username)
-    page = client.get("/admin/").data
-    assert b'href="/account/password"' in page
+def test_no_separate_role_home_template_is_left():
+    assert not (Path(__file__).parents[2] / "app/boundary/templates/role_home.html").exists()

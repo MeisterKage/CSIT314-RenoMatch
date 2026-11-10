@@ -5,10 +5,10 @@ from flask import abort, g, redirect, session, url_for
 from app.control.login_controller import LoginController
 
 ROLE_HOME = {
-    "admin": "admin.home",
+    "admin": "public.home",
     "designer": "public.home",
     "customer": "public.home",
-    "platform": "platform.home",
+    "platform": "public.home",
 }
 
 

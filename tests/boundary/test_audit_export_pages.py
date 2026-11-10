@@ -81,7 +81,7 @@ def test_audit_log_ignores_unreadable_dates(client, admin):
 
 
 def test_admin_nav_and_home_link_to_audit_log(client, admin):
-    for path in ("/admin/", "/account"):
+    for path in ("/", "/account"):
         assert 'href="/admin/audit-log"' in text(client.get(path))
 
 

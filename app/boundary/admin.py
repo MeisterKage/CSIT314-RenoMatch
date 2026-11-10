@@ -14,7 +14,6 @@ from flask import (
 from flask.views import MethodView
 
 from app.boundary.auth_guard import role_required
-from app.boundary.role_tools import CHANGE_PASSWORD, Tool
 from app.control.create_user_account_controller import CreateUserAccountController
 from app.control.errors import ValidationError
 from app.control.export_user_accounts_controller import ExportUserAccountsController
@@ -34,45 +33,18 @@ from app.entity.user_profile import ROLE_TYPES
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
-TOOLS = [
-    Tool(
-        "User accounts",
-        "Create, view, update, suspend and search accounts.",
-        endpoint="admin.accounts",
-    ),
-    Tool(
-        "User profiles",
-        "Group accounts by role and suspend a whole role at once.",
-        endpoint="admin.profiles",
-    ),
-    Tool(
-        "Audit Log",
-        "See which admin changed which account, and when.",
-        endpoint="audit_log.audit_log",
-    ),
-    Tool(
-        "Failed logins",
-        "Spot locked accounts after repeated failed logins and unlock genuine users.",
-        endpoint="admin.accounts",
-    ),
-    Tool(
-        "Export accounts",
-        "Download the account list as a CSV file.",
-        endpoint="admin.accounts",
-    ),
-    CHANGE_PASSWORD,
-]
-
 NO_ACCOUNTS_TO_EXPORT = "No accounts to export."
 PAGE_SIZE = 25
 STATUS_FILTERS = ("Active", "Suspended")
 
 
 class AdminHomePage(MethodView):
+    """User admins use the website home page, so this old address sends them there."""
+
     decorators = [role_required("admin")]
 
     def get(self):
-        return render_template("role_home.html", role_label="User Admin", tools=TOOLS)
+        return redirect(url_for("public.home"))
 
 
 def safeNext(default: str, prefix: str = "/admin/accounts") -> str:

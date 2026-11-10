@@ -702,64 +702,6 @@ fieldset {
 
 /* Role home ------------------------------------------------------------- */
 
-.role-head {
-  margin-bottom: 2.5rem;
-}
-
-.role-head p {
-  color: var(--stone);
-  font-size: 1.0625rem;
-}
-
-.tools {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.tool {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  padding: 1.5rem;
-  border-radius: var(--radius);
-  background: var(--mist);
-}
-
-.tool h3 {
-  margin: 0;
-}
-
-/* The heading link covers the whole card, so anywhere on the card can be clicked. */
-.tool h3 a::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radius);
-}
-
-.tool:hover {
-  background: var(--sage-tint);
-}
-
-.tool h3 a {
-  text-decoration: none;
-}
-
-.tool h3 a:hover {
-  text-decoration: underline;
-}
-
-.tool p {
-  margin: 0;
-  color: var(--stone);
-  font-size: 0.9375rem;
-}
-
 /* Browse designs ------------------------------------------------------- */
 
 .section--tight {
@@ -1199,7 +1141,6 @@ fieldset {
 
   .style-grid,
   .steps,
-  .tools,
   .choice-group,
   .footer-grid {
     grid-template-columns: 1fr;

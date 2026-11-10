@@ -157,8 +157,8 @@ def test_suspended_category_is_hidden_from_browse_filter_and_add_idp(
 # Navigation
 
 
-def test_platform_nav_and_home_link_categories_and_reports(client, manager):
-    for path in ("/platform/", "/platform/categories"):
+def test_platform_nav_links_categories_and_reports(client, manager):
+    for path in ("/", "/platform/categories"):
         page = text(client.get(path))
         assert 'href="/platform/categories"' in page
         assert 'href="/platform/reports"' in page
@@ -273,6 +273,8 @@ def test_pdf_with_bad_parameters_is_rejected(client, manager):
     assert client.get("/platform/reports/pdf?type=monthly&month=x&year=2026").status_code == 400
     assert client.get("/platform/reports/pdf?type=weekly").status_code == 400
     assert (
-        client.get("/platform/reports/pdf?type=custom&startDate=2026-10-31&endDate=2026-10-01").status_code
+        client.get(
+            "/platform/reports/pdf?type=custom&startDate=2026-10-31&endDate=2026-10-01"
+        ).status_code
         == 400
     )

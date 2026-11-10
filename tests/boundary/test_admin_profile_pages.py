@@ -50,9 +50,8 @@ def test_page_attributes(app):
 
 
 def test_admin_nav_and_home_link_to_profiles(client, admin):
-    assert 'href="/admin/profiles"' in text(client.get("/admin/"))
+    assert 'href="/admin/profiles"' in text(client.get("/"))
     assert 'href="/admin/profiles"' in text(client.get("/account"))
-    assert "Coming in Sprint" not in text(client.get("/admin/")).split("User profiles")[1][:400]
 
 
 # US-31 list and search
