@@ -8,7 +8,7 @@ ROLE_HOME = {
     "admin": "admin.home",
     "designer": "public.home",
     "customer": "public.home",
-    "platform": "platform.home",
+    "platform": "public.home",
 }
 
 

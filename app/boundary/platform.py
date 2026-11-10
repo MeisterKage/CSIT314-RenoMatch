@@ -1,41 +1,18 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, redirect, url_for
 from flask.views import MethodView
 
 from app.boundary.auth_guard import role_required
-from app.boundary.role_tools import CHANGE_PASSWORD, Tool
 
 bp = Blueprint("platform", __name__, url_prefix="/platform")
 
-TOOLS = [
-    Tool(
-        "Project categories",
-        "Create, update, suspend and search project categories.",
-        endpoint="categories.categories",
-    ),
-    Tool(
-        "Activity reports",
-        "Daily, monthly and custom-range activity, with a PDF export.",
-        endpoint="reports.reports",
-    ),
-    Tool(
-        "Featured projects",
-        "Choose which projects appear on the home page.",
-        endpoint="moderation.featured",
-    ),
-    Tool(
-        "Reported projects",
-        "Review projects users have reported and remove bad ones.",
-        endpoint="moderation.reported",
-    ),
-    CHANGE_PASSWORD,
-]
-
 
 class PlatformHomePage(MethodView):
+    """Platform managers use the website home page, so this old address sends them there."""
+
     decorators = [role_required("platform")]
 
     def get(self):
-        return render_template("role_home.html", role_label="Platform Management", tools=TOOLS)
+        return redirect(url_for("public.home"))
 
 
 bp.add_url_rule("/", view_func=PlatformHomePage.as_view("home"))
