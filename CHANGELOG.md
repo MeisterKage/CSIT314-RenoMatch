@@ -4,14 +4,14 @@ All notable changes to RenoMatch, newest first. Each entry links to its pull req
 Dates are Singapore time. User story numbers follow the use case deliverables in
 `docs/design/use-cases/`.
 
-## Team
+## Contributors
 
-| GitHub | Contributor |
-|---|---|
-| [MeisterKage](https://github.com/MeisterKage) | Team member |
-| [sjjt67](https://github.com/sjjt67) | Team member |
-| [KeefeLiew](https://github.com/KeefeLiew) | Team member |
-| [jerrits69](https://github.com/jerrits69) | Team member |
+RenoMatch is built by the whole team:
+
+- [MeisterKage](https://github.com/MeisterKage)
+- [sjjt67](https://github.com/sjjt67)
+- [KeefeLiew](https://github.com/KeefeLiew)
+- [jerrits69](https://github.com/jerrits69)
 
 ## 10 Nov 2026
 
@@ -23,6 +23,8 @@ Dates are Singapore time. User story numbers follow the use case deliverables in
 - The role home template, its tool lists and their styles are removed, along with the footer Your home link.
 - Every tool stays in the menu and Change password stays on the account page, so every user story is still reachable.
 - Added this changelog and the team list in the README.
+
+Contributors: MeisterKage, sjjt67, KeefeLiew, jerrits69
 
 ## 7 Nov 2026
 
@@ -118,6 +120,7 @@ Dates are Singapore time. User story numbers follow the use case deliverables in
 ### Diagram deliverables and build plan ([#4](https://github.com/MeisterKage/CSIT314-RenoMatch/pull/4))
 
 - Added the team's use case deliverables as the reference the code must match.
+- Use case diagrams, descriptions, sequence diagrams and class diagrams by the team: MeisterKage, sjjt67, KeefeLiew and jerrits69.
 - Added the full build spec and plan, and the interior photos used by the test data.
 
 ## 3 Oct 2026
