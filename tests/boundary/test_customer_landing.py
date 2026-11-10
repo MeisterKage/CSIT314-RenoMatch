@@ -27,10 +27,32 @@ def test_customer_home_page_has_no_link_to_a_separate_home(client, make_account,
     assert b"Recommended for you" in page or b"Popular designs" in page
 
 
-def test_admin_keeps_their_own_home(client, make_account):
-    account = make_account(role="admin")
-    resp = client.post("/login", data={"username": account.username, "password": TEST_PASSWORD})
-    assert resp.headers["Location"] == "/admin/"
+def test_every_role_lands_on_the_website_home_after_login(client, make_account):
+    for role in ("admin", "designer", "customer", "platform"):
+        account = make_account(role=role)
+        resp = client.post(
+            "/login", data={"username": account.username, "password": TEST_PASSWORD}
+        )
+        assert resp.headers["Location"] == "/", role
+        client.post("/logout")
+
+
+def test_old_admin_home_address_redirects_to_the_website_home(client, make_account, login):
+    login(make_account(role="admin").username)
+    resp = client.get("/admin/")
+    assert resp.status_code == 302
+    assert resp.headers["Location"] == "/"
+
+
+def test_admin_home_page_points_to_the_admin_tools(client, make_account, login):
+    login(make_account(role="admin").username)
+    page = client.get("/").data
+    assert b"Go to your home" not in page
+    assert b"Your home" not in page
+    assert b">User accounts</a>" in page
+    for path in (b"/admin/accounts", b"/admin/profiles", b"/admin/audit-log", b"/account"):
+        assert b'href="' + path in page
+    assert b'href="/account/password"' in client.get("/account").data
 
 
 def test_platform_manager_lands_on_the_website_home_after_login(client, make_account):

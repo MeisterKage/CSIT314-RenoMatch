@@ -7,7 +7,7 @@ from tests.helpers import TEST_PASSWORD
 @pytest.mark.parametrize(
     "role, home",
     [
-        ("admin", "/admin/"),
+        ("admin", "/"),
         ("designer", "/"),
         ("customer", "/"),
         ("platform", "/"),
@@ -41,7 +41,7 @@ def test_role_home_requires_login(client, default_profiles):
 
 def test_role_home_forbids_other_roles(client, make_account, login):
     login(make_account(role="customer").username)
-    assert client.get("/admin/").status_code == 403
+    assert client.get("/admin/accounts").status_code == 403
 
 
 def test_account_suspended_mid_session_is_sent_to_login(client, make_account, login):
@@ -55,11 +55,6 @@ def test_account_suspended_mid_session_is_sent_to_login(client, make_account, lo
 def test_logged_in_user_visiting_login_goes_home(client, make_account, login):
     login(make_account(role="platform").username)
     assert client.get("/login").headers["Location"] == "/"
-
-
-def test_role_home_greets_user_by_name(client, make_account, login):
-    login(make_account(role="admin", name="Dana Tan").username)
-    assert b"Welcome, Dana Tan." in client.get("/admin/").data
 
 
 def test_login_page_shows_the_locked_message_after_five_failures(client, make_account):

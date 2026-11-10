@@ -59,7 +59,7 @@ def test_only_the_manage_page_has_the_export_controller_attribute(app):
 
 
 def test_admin_nav_and_home_link_to_accounts(client, admin):
-    assert 'href="/admin/accounts"' in text(client.get("/admin/"))
+    assert 'href="/admin/accounts"' in text(client.get("/"))
     assert ">Accounts<" in text(client.get("/account"))
 
 
